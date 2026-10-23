@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Derived from design/logo.svg (canonical, unmodified). Path, stroke width, caps and colour are identical.
+     Only the adaptive-icon framing differs: scale 0.7 + translate 19 centres the 100-unit logo in 108 dp
+     and keeps it inside the 66 dp safe zone. Check with: python3 tools/check_logo.py -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.7"
+        android:scaleY="0.7"
+        android:translateX="19"
+        android:translateY="19">
+        <path
+            android:pathData="M 50 15 A 19 19 0 0 1 50 53 A 16 16 0 0 0 50 85"
+            android:fillColor="#00000000"
+            android:strokeColor="#3F4A3C"
+            android:strokeWidth="11"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
+</vector>
