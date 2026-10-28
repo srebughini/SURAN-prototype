@@ -75,7 +75,7 @@ Demo the Outside sheet: `adb shell am start -a app.suran.OUTSIDE --es package co
 2. **A LAUNCHER filter was added** next to HOME so SURAN can be opened once before it is the default.
 3. **Ready line** clears after 6 s or on the first app launch (not on "next resume"), because the Settings/role step triggers a resume.
 4. **Choose shows a "Not installed" group** in edit mode so unavailable entries can be removed. The spec was silent.
-5. **Home scroll:** when the list overflows it is scrollable, and the first row is at the top; anchored to the bottom only when it fits.
+5. **Home list (v0.1.5):** centred horizontally, and vertically centred in the free space between the clock and the footer; app name (when it differs) sits under the label; when the list overflows it scrolls from the top.
 6. **Palette (v0.1.4): the website's palette**, see below. Primary buttons use the accent #3F4A3C with a #F7F5F1 label (8.5:1).
 7. `m2-spike/` is kept out of the build so M1 stays independent.
 8. `Phone`/`Messages`/`Camera`/`Maps` resolve through intents, so on EMUI they may bring up Huawei/Honor apps whose labels differ (they show as quiet secondary text), and `Maps` may offer more than one app.
@@ -192,6 +192,16 @@ Colour values only; no layout, behaviour or code logic changed. Tokens live in `
 - The accent now equals the logo colour (#3F4A3C), so the launcher icon and the UI are one colour family. The earlier mismatch is gone.
 - The large-text contrast caveat for the button label no longer applies (8.5:1); the 19 sp size is unchanged because this task is palette only.
 - Not verified: not built or run.
+
+## v0.1.5: selected-apps list composition
+
+`HomeScreen.kt` only (the list container and `HomeRow`). Behaviour, data and every other element are unchanged.
+- Labels are centred on one axis; the app name (shown only when it differs, or "Not installed") moves from inline to a quiet line below, so centred rows stay aligned and the secondary text never makes the row ragged.
+- The list is vertically centred in the free space between the clock and the footer, instead of anchored to the bottom.
+- Rows are 64 dp (all rows, with or without a second line); the pressed state is a 10 dp rounded band.
+- Reasoning on realistic cases (760 dp tall phone, about 530 dp free): 1 item = one calm word in the middle; 3-5 items = a balanced block with equal space above and below; 8 items = about 512 dp, fills the space; more, or a 640 dp phone, or large fonts = scrolls from the top with 8 dp padding.
+- Trade-off to judge on the device: the list is no longer in the lowest thumb zone.
+- Not built or run.
 
 ## Known limitations
 - Not compiled or device-tested. Not tested on any device other than the planned Honor 10 Lite.

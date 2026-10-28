@@ -114,7 +114,13 @@ fun HomeScreen(
         BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             val h = maxHeight
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                Column(Modifier.fillMaxWidth().heightIn(min = h), verticalArrangement = Arrangement.Bottom) {
+                // Centred composition: the list sits in the middle of the free space between the clock and the footer
+                // (one item = one quiet word; a long list fills the space and scrolls).
+                Column(
+                    Modifier.fillMaxWidth().heightIn(min = h).padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
                     cfg.entries.forEach { e ->
                         val inst = installed[e.pkg]
                         val primary = catalogItem(e.intentId)?.label ?: e.appLabel
@@ -167,23 +173,21 @@ fun HomeScreen(
 @Composable
 private fun HomeRow(primary: String, secondary: String?, dim: Boolean, onClick: () -> Unit) {
     val desc = if (secondary == null) primary else "$primary, $secondary"
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 60.dp)
+    // Centred label; the app name (when it differs) sits quietly underneath so labels share one axis.
+    Column(
+        Modifier.fillMaxWidth().heightIn(min = 64.dp)
+            .clip(RoundedCornerShape(10.dp))
             .pressable(onClick, label = "Open $primary")
-            .semantics { contentDescription = desc },
-        verticalAlignment = Alignment.CenterVertically,
+            .semantics { contentDescription = desc }
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
         T(
             primary, 26.sp, weight = FontWeight.Normal, spacing = (-0.5).sp,
             color = if (dim) Ink.muted else Ink.ink, maxLines = 1,
-            modifier = Modifier.alignByBaseline(),
         )
-        if (secondary != null) {
-            T(
-                secondary, 16.sp, color = Ink.muted, maxLines = 1,
-                modifier = Modifier.padding(start = 12.dp).weight(1f, fill = false).alignByBaseline(),
-            )
-        }
+        if (secondary != null) T(secondary, 16.sp, color = Ink.muted, maxLines = 1)
     }
 }
 
