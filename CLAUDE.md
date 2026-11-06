@@ -21,7 +21,8 @@ Istruzioni operative per chi interviene sul codice. Il **codice è la fonte di v
 ## Compatibilità
 
 - minSdk 26, targetSdk 34. Dispositivo di riferimento (rilevato dal dispositivo): OnePlus A6003 (OnePlus 6), Android 11 (API 30), OxygenOS 11.1.2.2, build ONEPLUS A6003_22_211125. Versioni della toolchain: `docs/ARCHITECTURE.md`, sezione Dipendenze.
-- Percorso Home da verificare sul dispositivo di riferimento: `RoleManager` (API 29+). Il ramo API 26–28 (`ACTION_HOME_SETTINGS`) resta per minSdk e non è il percorso del dispositivo di riferimento.
+- Percorso Home sul dispositivo di riferimento: `RoleManager` (API 29+). In ST1 SURAN è stato impostato come Home (schermata effettiva non registrata; riavvio e diniego da verificare). Il ramo API 26–28 (`ACTION_HOME_SETTINGS`) resta per minSdk e non è verificato.
+- Stato verifiche: smoke test #1 superato (compilazione, installazione, Home predefinita, Home, avvio app e ritorno, Wi-Fi/Bluetooth): `docs/TESTING.md` §6. Criticità aperte: `docs/TECHNICAL_STATUS.md`.
 - API 27+/29+ solo dietro guardia `Build.VERSION.SDK_INT` (modelli: `isDefaultHome`, `requestHome`) o in cartelle risorse per API (`values-v27/`).
 - Package visibility (Android 11+): ogni nuovo intent risolto via `PackageManager` richiede una voce in `<queries>` del manifest.
 - Nessun permesso `INTERNET`, nessuna trasmissione di dati, `allowBackup=false`. Il log eventi è solo locale (il manifest lo cita come AC-33).

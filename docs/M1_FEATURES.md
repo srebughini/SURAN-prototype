@@ -2,6 +2,8 @@
 
 **Legenda stato:** Implementata = presente e coerente nel sorgente · Parziale = presente ma incompleta o con limiti noti · Non implementata.
 
+**Verifica:** ST1 = smoke test #1 su OnePlus 6 (Android 11, API 30), `TESTING.md` §6. Scelta iniziale, salvataggio e catalogo sono stati attraversati per arrivare alla Home, ma gli esiti puntuali non sono stati registrati: restano "Non verificata".
+
 | ID | Funzionalità | Stato | Verifica | Note |
 |---|---|---|---|---|
 | F-01 | Scelta iniziale "What is this phone for?": nulla preselezionato, CTA inattiva a 0 ("Choose what this phone is for"), "Start with this one" / "Start with these N", Back non fa nulla | Implementata | Non verificata | `ChooseScreen`, `SuranViewModel.initial` |
@@ -9,12 +11,12 @@
 | F-03 | Disambiguazione "Which one for …?" quando una voce ha più candidati | Implementata | Non verificata | |
 | F-04 | "Everything else (N)": sezione collassata; esclude SURAN e le app candidate del catalogo | Implementata | Non verificata | |
 | F-05 | Persistenza della configurazione in `config.json` (scrittura atomica, `schema` 1) | Implementata | Non verificata | TS-06 (file illeggibile = primo avvio) |
-| F-06 | Home: ora e data aggiornate, lista centrata, righe da 64 dp, nome app secondario se diverso, "Not installed" attenuato | Implementata | Non verificata | TS-11, TS-12 |
-| F-07 | Avvio dell'app dalla riga; app non installata → apre la modifica; errore "Couldn't open X." per 3 s | Implementata | Non verificata | Lo schermo successivo appartiene all'app lanciata |
+| F-06 | Home: ora e data aggiornate, lista centrata, righe da 64 dp, nome app secondario se diverso, "Not installed" attenuato | Implementata | Verificata in generale (ST1); dettagli non registrati | TS-11, TS-12 |
+| F-07 | Avvio dell'app dalla riga; app non installata → apre la modifica; errore "Couldn't open X." per 3 s | Implementata | Verificata: avvio app e ritorno a SURAN (ST1). Non verificati: app non installata, errore di lancio | Lo schermo successivo appartiene all'app lanciata |
 | F-08 | Modifica da footer "Change": Save attivo solo se cambia qualcosa; Cancel/Back/Home scartano; gruppo "Not installed" per rimuovere voci non più disponibili | Implementata | Non verificata | Il gruppo "Not installed" non era nelle specifiche (README, deviazione 4) |
-| F-09 | Impostazione come Home predefinita: sheet esplicativo, richiesta di ruolo (API 29+) o impostazioni Home (API 26–28), fallback al selettore di sistema, riga "Make SURAN your Home", chiusura automatica quando SURAN è Home | Implementata | Non verificata | Flusso critico su OnePlus 6 (Android 11, API 30): percorso da verificare = `RoleManager` (API 29+). Il ramo API 26–28 resta per minSdk e non è il percorso del dispositivo di riferimento: TS-02 |
+| F-09 | Impostazione come Home predefinita: sheet esplicativo, richiesta di ruolo (API 29+) o impostazioni Home (API 26–28), fallback al selettore di sistema, riga "Make SURAN your Home", chiusura automatica quando SURAN è Home | Implementata | Verificata in parte (ST1): SURAN impostato come Home su OnePlus 6. Non verificati: riavvio, diniego (AU-03), sheet e riga, ramo API 26–28 | Percorso atteso `RoleManager` (API 29+); schermata di sistema effettiva non registrata. TS-02 chiuso per questa configurazione |
 | F-10 | "Ready line" ("Your phone is ready…") se SURAN è già Home dopo il primo Start; scompare dopo 6 s o al primo lancio | Implementata | Non verificata | |
-| F-11 | Link "Wi-Fi" e "Bluetooth" in Home verso le schermate di sistema, con fallback a impostazioni wireless e generali | Implementata | Non verificata | Nessun permesso; SURAN non modifica nulla |
+| F-11 | Link "Wi-Fi" e "Bluetooth" in Home verso le schermate di sistema, con fallback a impostazioni wireless e generali | Implementata | Verificata: accesso alle schermate Wi-Fi e Bluetooth (ST1). Non verificati: ritorno a SURAN, fallback | Nessun permesso; SURAN non modifica nulla |
 | F-12 | Log eventi locale (`events.jsonl`) | Implementata | Non verificata | Eventi in `ARCHITECTURE.md` §5; TS-10 |
 | F-13 | Schermata Outside: sheet con "Back to your phone", "Open once", "Add to this phone" | Parziale | Non verificata | Raggiungibile solo con l'intent di debug. "Open once" scrive `Session.onceAllowed`, che in M1 nessuno legge. "Add" salva in config ma la Home non si ricarica: TS-04, TS-05 |
 | F-14 | Icona launcher adaptive derivata 1:1 da `design/logo.svg` | Implementata | Non verificata | `tools/check_logo.py` non eseguito; asset inutilizzato `ic_suran.xml`: D-05 |

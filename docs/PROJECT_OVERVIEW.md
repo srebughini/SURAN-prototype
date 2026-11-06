@@ -21,6 +21,8 @@ Validare M1 su dispositivi reali (riferimento: OnePlus A6003 / OnePlus 6, Androi
 
 Il log locale `events.jsonl` serve a raccogliere dati su questi punti; non viene trasmesso.
 
+**Stato:** smoke test #1 superato sul dispositivo di riferimento (compilazione, installazione, Home predefinita, Home, avvio app e ritorno, Wi-Fi/Bluetooth); dettagli in `TESTING.md` §6. Criticità aperte: `TECHNICAL_STATUS.md`.
+
 ## Perimetro M1
 
 Dentro (stato di ciascuna voce: `M1_FEATURES.md`): scelta e modifica di ciò per cui serve il telefono, Home personalizzata, avvio delle app scelte, impostazione come Home predefinita, accesso alle impostazioni Wi-Fi e Bluetooth, log eventi locale, schermata "Outside" dimostrativa (solo intent di debug), icona derivata dal logo canonico.

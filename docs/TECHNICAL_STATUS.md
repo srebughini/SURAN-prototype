@@ -2,20 +2,22 @@
 
 Dispositivo di riferimento (rilevato dal dispositivo): OnePlus A6003 (OnePlus 6), Android 11 (API 30), OxygenOS 11.1.2.2, build ONEPLUS A6003_22_211125.
 
+**Stato dopo lo smoke test #1 (ST1, `TESTING.md` §6):** TS-01 e TS-02 (audit AU-01, AU-02) chiusi per la configurazione verificata. Tutte le altre voci restano aperte finché non verificate direttamente. Le voci chiuse sono conservate per cronologia.
+
 ## Rischi e debito tecnico
 
 | ID | Pri | Problema | Evidenza | Azione suggerita (non eseguita) |
 |---|---|---|---|---|
-| TS-01 | P0 | Il codice non è mai stato compilato né eseguito | README: "source only"; la lettura non ha mostrato errori di compilazione evidenti, ma non equivale a una build | Prima build e correzioni minime |
-| TS-02 | P0 | Impostazione come Home su OnePlus 6 / Android 11 (API 30) non verificata. Il percorso da verificare è quello basato su `RoleManager` (API 29+: `createRequestRoleIntent(ROLE_HOME)`). Il ramo API 26–28 (`ACTION_HOME_SETTINGS`, poi selettore di sistema) resta per minSdk e non è il percorso del dispositivo di riferimento | `HomeActivity.requestHome`; README passo 4 (scritto per un altro dispositivo) | Provare su OnePlus 6 e annotare l'esito del dialog di ruolo |
+| TS-01 (audit AU-01) | P0 — **Chiuso** (ST1) | Il codice non è mai stato compilato né eseguito | README: "source only"; la lettura non ha mostrato errori di compilazione evidenti, ma non equivale a una build | **Chiuso** per la configurazione verificata: compilazione riuscita, app installata e avviata su OnePlus 6. Non copre altri dispositivi, la variante di build (non registrata) né il manifest unito |
+| TS-02 (audit AU-02) | P0 — **Chiuso** (ST1) | Impostazione come Home su OnePlus 6 / Android 11 (API 30). Percorso atteso: `RoleManager` (API 29+: `createRequestRoleIntent(ROLE_HOME)`). Il ramo API 26–28 (`ACTION_HOME_SETTINGS`, poi selettore di sistema) resta per minSdk e non è il percorso del dispositivo di riferimento | `HomeActivity.requestHome`; README passo 4 (scritto per un altro dispositivo) | **Chiuso** per questa configurazione: SURAN impostato come Home predefinita. Schermata di sistema effettiva non registrata; riavvio e diniego non verificati (vedi AU-03); ramo API 26–28 non verificato |
 | TS-03 | P1 | `gradlew` e `gradle-wrapper.jar` non tra i file analizzati; presente solo `gradle-wrapper.properties` | Elenco file | Build da Android Studio o generare il wrapper (`TESTING.md`) |
 | TS-04 | P1 | Dopo "Add to this phone" la Home può mostrare una config vecchia: `onResume` non ricarica `config` e `OutsideActivity` scrive con un proprio `ConfigStore` | `SuranViewModel.onResume`; `OutsideActivity.onAdd` | Verificare su dispositivo; poi decidere con te se ricaricare la config |
 | TS-05 | P1 | In `onAdd`, se `config.json` manca o è illeggibile si salva `Config(setupDone=false, …)`: al riavvio riparte la scelta iniziale | `OutsideActivity.onAdd` | Verificare; in M1 è raggiungibile solo con l'intent di debug |
 | TS-06 | P1 | `ConfigStore.load()` restituisce `null` su qualsiasi eccezione: un file corrotto equivale a primo avvio, senza backup. `schema` è scritto ma non letto | `Config.kt` | Valutare dopo i primi test |
-| TS-07 | P1 | `queryInstalled`, `catalogCandidates` (una `queryIntentActivities` per voce) e `isDefaultHome` girano sul main thread alla creazione del ViewModel e a ogni `onResume`; anche i log scrivono su file dal main thread | `SuranViewModel`, `Apps.kt`, `Catalog.kt`, `EventLog.kt` | Misurare tempo di avvio e jank sul OnePlus 6 |
-| TS-08 | P2 | OxygenOS può terminare il processo del launcher in base alle impostazioni di gestione batteria. Il passo 5 del README è scritto per un altro dispositivo | README passo 5 | Individuare sul dispositivo le impostazioni batteria applicabili a SURAN e confermare il passo operativo |
-| TS-09 | P2 | Phone/Messages/Camera/Maps si risolvono per intent: su OxygenOS possono comparire app OnePlus con etichette diverse, e Maps può avere più candidati | README deviazione 8; `catalogCandidates` | Verificare sul dispositivo |
-| TS-10 | P2 | `EventLog`: istanze multiple (Application, ViewModel, Outside) scrivono sullo stesso file; il conteggio per il taglio è per istanza, quindi il tetto di 5.000 righe non è garantito. Il file sta nella cartella external files e contiene i nomi dei pacchetti lanciati; su Android 9 le app con permesso di storage possono leggere quelle cartelle (da valutare) | `EventLog.kt` | Controllare dimensione e formato dopo uso reale |
+| TS-07 (audit AU-05) | P1 | `queryInstalled`, `catalogCandidates` (una `queryIntentActivities` per voce) e `isDefaultHome` girano sul main thread alla creazione del ViewModel e a ogni `onResume`; anche i log scrivono su file dal main thread | `SuranViewModel`, `Apps.kt`, `Catalog.kt`, `EventLog.kt` | Misurare tempo di avvio e jank sul OnePlus 6 |
+| TS-08 (audit AU-06) | P2 | OxygenOS può terminare il processo del launcher in base alle impostazioni di gestione batteria. Il passo 5 del README è scritto per un altro dispositivo | README passo 5 | Individuare sul dispositivo le impostazioni batteria applicabili a SURAN e confermare il passo operativo |
+| TS-09 (audit AU-07) | P2 | Phone/Messages/Camera/Maps si risolvono per intent: su OxygenOS possono comparire app OnePlus con etichette diverse, e Maps può avere più candidati | README deviazione 8; `catalogCandidates` | Verificare sul dispositivo |
+| TS-10 (audit AU-08) | P2 | `EventLog`: istanze multiple (Application, ViewModel, Outside) scrivono sullo stesso file; il conteggio per il taglio è per istanza, quindi il tetto di 5.000 righe non è garantito. Il file sta nella cartella external files e contiene i nomi dei pacchetti lanciati; su Android 9 le app con permesso di storage possono leggere quelle cartelle (da valutare) | `EventLog.kt` | Controllare dimensione e formato dopo uso reale |
 | TS-11 | P2 | Font grande, TalkBack: non provati. Le righe Home hanno `maxLines = 1` con ellissi | `HomeScreen.HomeRow`, `T()` | Checklist in `TESTING.md` |
 | TS-12 | P2 | Lista Home centrata, non più nella zona bassa del pollice: decisione UX aperta | README v0.1.5 | Giudicare sul dispositivo |
 | TS-13 | P3 | Nessun test automatico, CI o configurazione lint | Nessuna cartella di test; nessuna dipendenza di test | `TESTING.md` |
@@ -23,6 +25,17 @@ Dispositivo di riferimento (rilevato dal dispositivo): OnePlus A6003 (OnePlus 6)
 | TS-15 | P3 | Stringhe UI hard-coded nel codice (solo `app_name` in `strings.xml`); solo inglese, tema chiaro, portrait | Sorgente | Nessuna azione per M1 |
 | TS-16 | P3 | `res/drawable/ic_suran.xml` è un segnaposto non referenziato (il manifest usa `@mipmap/ic_launcher`) | Manifest, D-05 | Chiedere autorizzazione prima di eliminarlo |
 | TS-17 | P3 | `registerReceiver` senza flag di esportazione con targetSdk 34: i broadcast usati sono di sistema, quindi probabilmente esenti. Non verificato | `HomeScreen.rememberNow` | Verificare in build |
+
+## Criticità dall'audit non presenti sopra (aperte)
+
+| ID | Pri | Problema | Stato |
+|---|---|---|---|
+| AU-03 | P1 | `HomeActivity.roleLauncher` non controlla l'esito della richiesta di ruolo Home e non ha fallback: se il dialog è negato con "non chiedere più", il pulsante può sembrare inattivo | Aperta, non verificata |
+| AU-04 | P1 | Il log non copre le ipotesi del test (richiesta/esito Home, sheet, apertura/annullamento modifica, `launchError`); si recupera solo con `adb pull` | Aperta |
+| AU-09 | P2 | `HomeScreen.rememberNow` non si aggiorna al resume: possibile orologio fermo fino al tick successivo | Aperta, non verificata |
+| AU-10 | P2 | Lo sheet Home dice "press the Home button"; con navigazione a gesti non c'è alcun pulsante | Aperta; dipende dal tipo di navigazione, non registrato |
+
+Corrispondenze: AU-05 = TS-07, AU-06 = TS-08, AU-07 = TS-09, AU-08 = TS-10 (tutte aperte). Rilievi documentali dell'audit non ancora corretti: F-06 e `PROJECT_OVERVIEW` (nome app secondario, v0.1.6); D-07 (il README arriva a v0.1.6); `ARCHITECTURE` §2 ("unica Activity UI"); `check_logo.py` su Windows; `TESTING` §3 ("Studio crea il wrapper", non verificato).
 
 ## Incongruenze documentazione ↔ codice
 
@@ -49,7 +62,7 @@ Fuori perimetro e non analizzato (`m2-spike/`). Il README segnala che la allowli
 
 ## Informazioni non verificabili con i file disponibili
 
-- Compilazione, esecuzione, comportamento su emulatore o OnePlus 6.
+- Verificati in ST1 solo su OnePlus 6 / Android 11 (compilazione, avvio, Home predefinita, Home, avvio app, Wi-Fi/Bluetooth). Non verificati: emulatore, altre versioni Android, riavvio, ramo API 26–28 e quanto elencato in `TESTING.md` §6.
 - Contenuto di `m2-spike/`, `gradlew`, `gradle-wrapper.jar` e di eventuali altri file non inclusi nella conoscenza di progetto.
 - Hash `0556a85c…` del logo e identità con l'asset della landing page; esito di `check_logo.py`.
 - Manifest unito dell'APK (assenza effettiva di `INTERNET`).
