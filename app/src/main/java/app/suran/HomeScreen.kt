@@ -124,12 +124,8 @@ fun HomeScreen(
                     cfg.entries.forEach { e ->
                         val inst = installed[e.pkg]
                         val primary = catalogItem(e.intentId)?.label ?: e.appLabel
-                        val appName = inst?.label ?: e.appLabel
-                        val secondary = when {
-                            inst == null -> "Not installed"
-                            !appName.equals(primary, ignoreCase = true) -> appName
-                            else -> null
-                        }
+                        // One label per app. Only the "Not installed" state shows a second line.
+                        val secondary = if (inst == null) "Not installed" else null
                         HomeRow(primary, secondary, dim = inst == null) { onRow(e) }
                     }
                 }

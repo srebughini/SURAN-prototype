@@ -203,6 +203,12 @@ Colour values only; no layout, behaviour or code logic changed. Tokens live in `
 - Trade-off to judge on the device: the list is no longer in the lowest thumb zone.
 - Not built or run.
 
+## v0.1.6: one label per app on Home
+
+`HomeScreen.kt` only. The Home row no longer shows the app's own (system-localized) name under the label; it shows the existing
+primary label only. The "Not installed" line for unavailable apps is kept. Layout, spacing and typography are unchanged
+(rows were already 64 dp). Not built or run. Not changed: Choose still shows app names as its secondary line.
+
 ## Known limitations
 - Not compiled or device-tested. Not tested on any device other than the planned Honor 10 Lite.
 - No outside detection in M1 (Outside sheet is demo-only until M2 works).
