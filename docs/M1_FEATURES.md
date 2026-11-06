@@ -22,7 +22,8 @@
 | F-14 | Icona launcher adaptive derivata 1:1 da `design/logo.svg` | Implementata | Non verificata | `tools/check_logo.py` non eseguito; asset inutilizzato `ic_suran.xml`: D-05 |
 | F-15 | Nessun permesso `INTERNET`; `allowBackup=false` | Implementata | Non verificata | Visto nel manifest sorgente; manifest unito dell'APK non ispezionato |
 | F-16 | Accessibilità di base: `semantics` con etichette, ruoli (Button, Checkbox), aree di tocco ≥ 48 dp | Implementata | Non verificata | Presenza nel codice; TalkBack non provato (TS-11) |
-| F-17 | Vincoli dichiarati: solo portrait, solo tema chiaro, solo inglese | Implementata | Non verificata | TS-15 |
+| F-17 | Vincoli dichiarati: solo portrait, solo inglese; tema chiaro di default (il tema scuro è opzionale: F-18) | Implementata | Non verificata | TS-15 |
+| F-18 | Tema scuro opzionale, solo dentro SURAN: link "Dark"/"Light" nel footer Home accanto a "Change" (mostra il tema a cui si passa); cambio immediato; default light; scelta salvata in `filesDir/theme` e ripristinata all'avvio; non segue il tema di sistema; icone delle barre di sistema coerenti; tema chiaro invariato | Implementata | Non verificata | `Theme.kt` (`Ink.dark`, `Ink.scrim`, `barStyle`), `ThemeStore.kt`. Contrasti calcolati, non misurati su schermo: `TESTING.md` §5. TS-18, TS-19, TS-20, TS-21. Nessun evento di log aggiunto |
 
 ## Non implementate (in M1)
 
@@ -30,5 +31,5 @@
 |---|---|---|
 | N-01 | Rilevamento reale delle app "esterne" (apertura automatica dello sheet Outside) | Previsto con M2 (servizio di accessibilità, `m2-spike/`, non analizzato) |
 | N-02 | Gestione/intercettazione delle notifiche | README: limite noto |
-| N-03 | Tema scuro, localizzazione, orientamento landscape | |
+| N-03 | Localizzazione, orientamento landscape, tema scuro legato al tema di sistema | Il tema scuro manuale è F-18 |
 | N-04 | Test automatici | `TESTING.md` |

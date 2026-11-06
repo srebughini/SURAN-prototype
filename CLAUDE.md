@@ -30,17 +30,17 @@ Istruzioni operative per chi interviene sul codice. Il **codice è la fonte di v
 ## Architettura: regole da rispettare
 
 - Un solo modulo `:app`, package `app.suran`. Nessun DI, nessun NavHost, nessun Room/DataStore.
-- Stato UI: un solo `UiState` in `SuranViewModel` (StateFlow). Navigazione = `Crossfade` sull'enum `Screen` in `HomeActivity`.
-- Persistenza: `config.json` (`ConfigStore`) ed `events.jsonl` (`EventLog`) con `org.json`. Il campo `schema` (=1) viene scritto ma non letto da `load()`: ogni cambio di formato deve restare compatibile con i file esistenti.
+- Stato UI: un solo `UiState` in `SuranViewModel` (StateFlow). Navigazione = `Crossfade` sull'enum `Screen` in `HomeActivity`. Eccezione: il tema è `Ink.dark`, stato Compose globale caricato in `SuranApp`.
+- Persistenza: `config.json` (`ConfigStore`), `events.jsonl` (`EventLog`) con `org.json`, e `theme` (`ThemeStore`, testo "dark"/"light"). Il campo `schema` (=1) viene scritto ma non letto da `load()`: ogni cambio di formato deve restare compatibile con i file esistenti.
 - UI: Compose foundation con `BasicText` tramite `T()` / `TA()`. Niente Material. Nessuna nuova dipendenza senza approvazione.
 - Perimetro: M2 (`m2-spike`, servizio di accessibilità) resta fuori dal build M1. Non importare codice M2 in `app`.
 
 ## Design (non derogare)
 
-- Colori solo da `Ink` (`Theme.kt`) e `res/values/colors.xml`; palette di suran.tech. Nessun colore hard-coded nelle schermate.
+- Colori solo da `Ink` (`Theme.kt`, valori light e dark) e `res/values/colors.xml`; palette di suran.tech. Il dark deriva dagli stessi neutri caldi e dall'accento `#3F4A3C` schiarito; il light non va modificato. Nessun colore hard-coded nelle schermate.
 - Hairline da 1 dp al posto delle ombre; raggio 10 dp; niente icone decorative, card, badge, notifiche.
 - Logo canonico `design/logo.svg`: non modificarlo. Dopo ogni intervento sulle icone eseguire `python3 tools/check_logo.py`.
-- Testi UI in inglese (nessuna localizzazione), tema chiaro, solo portrait.
+- Testi UI in inglese (nessuna localizzazione), tema chiaro di default con tema scuro opzionale (toggle nel footer, nessun legame con il tema di sistema), solo portrait.
 
 ## Build
 

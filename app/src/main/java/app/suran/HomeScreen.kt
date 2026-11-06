@@ -83,6 +83,7 @@ fun HomeScreen(
     onConnectivity: (String) -> Unit,
     onClearError: () -> Unit,
     onClearReady: () -> Unit,
+    onTheme: () -> Unit,
 ) {
     BackHandler(enabled = true) { if (s.homeSheet) onLater() }   // Back on Home otherwise does nothing
     val cfg = s.config ?: return
@@ -154,12 +155,22 @@ fun HomeScreen(
                 append(if (n == 1) "This phone is for 1 thing · " else "This phone is for $n things · ")
                 withStyle(SpanStyle(color = Ink.ink, fontWeight = FontWeight.Medium)) { append("Change") }
             }
-            Row(
-                Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                    .pressable(onChange, label = "Change what this phone is for")
-                    .semantics { contentDescription = "This phone is for $n ${if (n == 1) "thing" else "things"}. Change what this phone is for" },
-                verticalAlignment = Alignment.CenterVertically,
-            ) { TA(footer, 15.sp) }
+            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    Modifier.weight(1f).heightIn(min = 56.dp)
+                        .pressable(onChange, label = "Change what this phone is for")
+                        .semantics { contentDescription = "This phone is for $n ${if (n == 1) "thing" else "things"}. Change what this phone is for" },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) { TA(footer, 15.sp) }
+                // Names the theme you will get, like the Wi-Fi/Bluetooth links name where you will go.
+                val toDark = !Ink.dark
+                QuietLink(
+                    label = if (toDark) "Dark" else "Light",
+                    description = if (toDark) "Switch to dark theme" else "Switch to light theme",
+                    actionLabel = if (toDark) "Switch to dark theme" else "Switch to light theme",
+                    onClick = onTheme,
+                )
+            }
         }
     }
     if (s.homeSheet) HomeSetupSheet(onChooseHome, onLater)
@@ -197,7 +208,7 @@ private fun HomeSetupSheet(onChoose: () -> Unit, onLater: () -> Unit) {
     val action = if (Build.VERSION.SDK_INT >= 29) "Android will ask you to confirm. Choose SURAN."
     else "Android will open its settings. Look for Home or Launcher, and choose SURAN."
     Box(
-        Modifier.fillMaxSize().background(Ink.ink.copy(alpha = 0.4f))
+        Modifier.fillMaxSize().background(Ink.scrim)
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onLater),
     ) {
         Column(
@@ -226,10 +237,10 @@ private fun HomeSetupSheet(onChoose: () -> Unit, onLater: () -> Unit) {
 }
 
 @Composable
-private fun QuietLink(label: String, description: String, onClick: () -> Unit) {
+private fun QuietLink(label: String, description: String, actionLabel: String = "Open $description", onClick: () -> Unit) {
     Box(
         Modifier.heightIn(min = 48.dp)
-            .pressable(onClick, label = "Open $description")
+            .pressable(onClick, label = actionLabel)
             .semantics { contentDescription = description }
             .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center,

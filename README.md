@@ -19,9 +19,10 @@ app/src/main/java/app/suran/
   Apps.kt            installed apps, launch, default-Home check, labels
   EventLog.kt        local events.jsonl (cap 5,000 lines)
   Session.kt         in-memory "Open once" + Outside loop guard
-  SuranApp.kt        logs app_open{defaultHome}
+  SuranApp.kt        loads the theme, logs app_open{defaultHome}
+  ThemeStore.kt      theme file (filesDir/theme: "dark" or "light")
   SuranViewModel.kt  single UiState StateFlow
-  Theme.kt           tokens + text + press helper
+  Theme.kt           tokens (light + dark) + text + press helper
   HomeScreen.kt, ChooseScreen.kt, HomeActivity.kt, OutsideActivity.kt
 m2-spike/            NOT compiled: accessibility service, allowlist, instructions
 ```
@@ -209,12 +210,20 @@ Colour values only; no layout, behaviour or code logic changed. Tokens live in `
 primary label only. The "Not installed" line for unavailable apps is kept. Layout, spacing and typography are unchanged
 (rows were already 64 dp). Not built or run. Not changed: Choose still shows app names as its secondary line.
 
+## v0.1.7: optional dark theme (SURAN only)
+
+- **What:** a "Dark" link at the right of the Home footer (next to "Change") switches SURAN to a dark theme; it then reads "Light". Default is light, and the light theme is unchanged (same values, same layout). The choice is saved in `filesDir/theme` and restored at start. It never follows the system theme and does not touch Android settings or other apps.
+- **Palette:** the same warm neutrals, inverted, with the accent #3F4A3C lightened. bg #1A1918, text #F7F5F1, secondary #B5B0A6, hairline/disabled #3A3834, quiet surface #262422, accent #A3B59E (pressed #8FA08A), error #E08A72, sheet scrim black at 60%. No blue, no other greens. Contrast ratios (calculated, not measured on screen): `docs/TESTING.md` §5.
+- **How:** `Ink` colours became getters on `Ink.dark` (Compose state), so screens did not change. New `Ink.scrim` replaces `Ink.ink.copy(alpha = 0.4f)` in three sheets; `barStyle()` sets the system bar icons; `Ink.bg` sits behind the `Crossfade`. No new dependency, no new log event, `config.json` untouched.
+- **Files:** `Theme.kt`, `ThemeStore.kt` (new), `SuranApp.kt`, `SuranViewModel.kt`, `HomeActivity.kt`, `HomeScreen.kt`, `ChooseScreen.kt`, `OutsideActivity.kt`.
+- **Known limits:** a brief light flash at cold start in dark (the system starting window stays light); the footer may wrap with very large fonts. Not built or run in the authoring environment: test on the OnePlus 6 (checklist in `docs/TESTING.md` §5).
+
 ## Known limitations
 - Not compiled or device-tested. Not tested on any device other than the planned Honor 10 Lite.
 - No outside detection in M1 (Outside sheet is demo-only until M2 works).
 - Notifications from non-chosen apps are not handled.
 - Real apps keep their own feeds once opened; SURAN controls only the doorway.
-- English only; light theme; portrait only.
+- English only; light theme by default (dark is optional, SURAN only); portrait only.
 - Debug-signed release APK (prototype only).
 
 ## M2 spike result

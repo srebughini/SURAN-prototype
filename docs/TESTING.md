@@ -89,6 +89,38 @@ Legenda ambiente: **B** build · **E** emulatore · **D** solo dispositivo fisic
 - [ ] L'intent demo mostra lo sheet con tre azioni nell'ordine previsto
 - [ ] Back, "Open once", "Add to this phone" si comportano come nel README
 
+### Tema scuro (F-18; D su OnePlus 6, non ancora eseguito)
+- [ ] B: sync e compilazione dopo la modifica (nuovo file `ThemeStore.kt`; modifiche in `Theme.kt`, `HomeActivity`, `HomeScreen`, `ChooseScreen`, `OutsideActivity`, `SuranApp`, `SuranViewModel`)
+- [ ] Light invariato: Home, Choose, sheet "Make SURAN your Home", "Which one for …?", Outside (debug) identici a prima della modifica
+- [ ] Primo avvio, o dopo cancellazione dei dati dell'app: tema light
+- [ ] Footer Home: "This phone is for N things · Change" e a destra "Dark"; il tocco su "Change" apre ancora la modifica, il tocco su "Dark" cambia tema
+- [ ] Cambio immediato (nessun riavvio, nessuna perdita di stato): lo sfondo diventa scuro, l'etichetta diventa "Light", le icone di stato e navigazione diventano chiare; il ritorno a light le riporta scure
+- [ ] Dark, tutte le schermate: Home (ora, data, righe, "Not installed", ready line, riga "Make SURAN your Home", link Wi-Fi/Bluetooth, footer), Choose (titolo, gruppi, righe selezionate e non, pallino, "Everything else", bottone attivo e disattivo, "Couldn't save"), sheet Home, "Which one for …?", Outside (debug)
+- [ ] Transizione Home ↔ Choose in dark: nessun lampo chiaro durante il crossfade
+- [ ] Persistenza: scelto dark, chiudere SURAN (dai recenti) e riaprire → dark; riavvio del dispositivo → SURAN ancora Home e ancora dark; lo stesso con light
+- [ ] Debug: `adb shell run-as app.suran cat files/theme` contiene `dark` o `light`; `config.json` e `events.jsonl` non cambiano per il solo cambio tema
+- [ ] Avvio a freddo in dark (TS-18): descrivere il lampo chiaro, se c'è
+- [ ] Footer con font al massimo, con 1 e con 10 voci (TS-19): nessun testo tagliato, "Dark"/"Light" raggiungibile
+- [ ] TalkBack: il link viene letto come "Switch to dark theme" / "Switch to light theme"
+- [ ] Tema di sistema attivo e disattivo (e l'eventuale opzione OxygenOS per le app di terze parti; percorso da annotare): SURAN appare uguale in entrambi i casi (TS-20)
+- [ ] App esterne e schermate di sistema (Wi-Fi, Bluetooth, impostazioni Home) non cambiano aspetto per effetto del tema di SURAN
+- [ ] Giudizio visivo sulla leggibilità del dark (testo, hairline, bottone disattivo) in uso reale; registrare l'esito
+
+**Contrasti WCAG calcolati con script sui valori in `Theme.kt` (calcolo, non misura su schermo).** Light: testo 16,1:1, secondario 6,2:1, accento 8,5:1 (invariati).
+
+| Coppia (dark) | Valori | Contrasto |
+|---|---|---|
+| `ink` su `bg` | #F7F5F1 su #1A1918 | 16,1:1 |
+| `ink` su `surfaceAlt` | #F7F5F1 su #262422 | 14,2:1 |
+| `muted` su `bg` | #B5B0A6 su #1A1918 | 8,1:1 |
+| `muted` su `surfaceAlt` | #B5B0A6 su #262422 | 7,2:1 |
+| `muted` su `line` (etichetta bottone disattivo) | #B5B0A6 su #3A3834 | 5,4:1 |
+| `accent` su `bg` (pallino selezionato) | #A3B59E su #1A1918 | 8,1:1 |
+| `bg` su `accent` (etichetta bottone) | #1A1918 su #A3B59E | 8,1:1 |
+| `bg` su `accentPressed` | #1A1918 su #8FA08A | 6,3:1 |
+| `error` su `bg` / su `surfaceAlt` | #E08A72 | 6,7:1 / 5,9:1 |
+| `line` su `bg` (hairline, non testo) | #3A3834 su #1A1918 | 1,5:1 |
+
 ### Verifiche derivate dall'analisi (non presenti nel README)
 - [ ] TS-04: dopo "Add to this phone" e ritorno alla Home, la nuova riga compare?
 - [ ] TS-05: "Add" con config assente o illeggibile: cosa viene salvato?

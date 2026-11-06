@@ -25,9 +25,9 @@ Il log locale `events.jsonl` serve a raccogliere dati su questi punti; non viene
 
 ## Perimetro M1
 
-Dentro (stato di ciascuna voce: `M1_FEATURES.md`): scelta e modifica di ciò per cui serve il telefono, Home personalizzata, avvio delle app scelte, impostazione come Home predefinita, accesso alle impostazioni Wi-Fi e Bluetooth, log eventi locale, schermata "Outside" dimostrativa (solo intent di debug), icona derivata dal logo canonico.
+Dentro (stato di ciascuna voce: `M1_FEATURES.md`): scelta e modifica di ciò per cui serve il telefono, Home personalizzata, avvio delle app scelte, impostazione come Home predefinita, accesso alle impostazioni Wi-Fi e Bluetooth, tema scuro opzionale solo dentro SURAN (toggle nel footer, default light), log eventi locale, schermata "Outside" dimostrativa (solo intent di debug), icona derivata dal logo canonico.
 
-Fuori da M1: rilevamento reale delle app "esterne", gestione delle notifiche, tema scuro, localizzazione, test automatici.
+Fuori da M1: rilevamento reale delle app "esterne", gestione delle notifiche, tema legato al sistema, localizzazione, test automatici.
 
 ## M2 (separato)
 

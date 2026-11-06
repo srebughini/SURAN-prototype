@@ -212,7 +212,7 @@ private fun AmbiguitySheet(
 ) {
     val none = remember { MutableInteractionSource() }
     Box(
-        Modifier.fillMaxSize().background(Ink.ink.copy(alpha = 0.4f))
+        Modifier.fillMaxSize().background(Ink.scrim)
             .clickable(interactionSource = none, indication = null, onClick = onDismiss),
     ) {
         Column(

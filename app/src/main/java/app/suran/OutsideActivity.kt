@@ -1,10 +1,8 @@
 package app.suran
 
 import android.content.Intent
-import android.graphics.Color as AColor
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -50,10 +48,7 @@ class OutsideActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.light(AColor.TRANSPARENT, AColor.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.light(AColor.TRANSPARENT, AColor.TRANSPARENT),
-        )
+        enableEdgeToEdge(statusBarStyle = barStyle(Ink.dark), navigationBarStyle = barStyle(Ink.dark))
         if (!accept(intent)) { finish(); return }
 
         setContent {
@@ -65,7 +60,7 @@ class OutsideActivity : ComponentActivity() {
             BackHandler { onBack() }
 
             Box(
-                Modifier.fillMaxSize().background(Ink.ink.copy(alpha = 0.4f))
+                Modifier.fillMaxSize().background(Ink.scrim)
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onBack() },
             ) {
                 AnimatedVisibility(

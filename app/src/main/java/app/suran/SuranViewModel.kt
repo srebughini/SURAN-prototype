@@ -29,6 +29,7 @@ data class UiState(
 class SuranViewModel(private val app: Application) : AndroidViewModel(app) {
     private val store = ConfigStore(app.filesDir)
     private val log = EventLog(app)
+    private val themeStore = ThemeStore(app.filesDir)
     private val _state = MutableStateFlow(initial())
     val state: StateFlow<UiState> = _state.asStateFlow()
 
@@ -79,6 +80,12 @@ class SuranViewModel(private val app: Application) : AndroidViewModel(app) {
         log.log("connectivity_open", "target" to target, "action" to action)
 
     fun reportError(message: String) = _state.update { it.copy(launchError = message) }
+
+    /** Switches SURAN's own light/dark theme and remembers it. If saving fails the theme still changes for this session. */
+    fun toggleTheme() {
+        Ink.dark = !Ink.dark
+        themeStore.saveDark(Ink.dark)
+    }
 
     fun showHomeSheet() = _state.update { it.copy(homeSheet = true) }
     fun hideHomeSheet() = _state.update { it.copy(homeSheet = false) }

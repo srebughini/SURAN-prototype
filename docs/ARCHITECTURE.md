@@ -22,17 +22,18 @@ Un solo modulo (`:app`), package `app.suran`, nessuna directory di test.
 
 | File | Elementi principali | Responsabilità |
 |---|---|---|
-| `SuranApp.kt` | `SuranApp` | `Application`; logga `app_open{defaultHome}` a ogni avvio processo |
+| `SuranApp.kt` | `SuranApp` | `Application`; carica il tema (`Ink.dark`) prima di qualsiasi Activity; logga `app_open{defaultHome}` a ogni avvio processo |
 | `HomeActivity.kt` | `HomeActivity` | Unica Activity UI di M1 (filtri HOME e LAUNCHER, `singleTask`, portrait). Ospita Compose; `Crossfade` tra `Screen.HOME` e `Screen.CHOOSE`; `onResume` → `Session.reset()` + `vm.onResume()`; `onNewIntent` (tasto Home); `openConnectivity`; `requestHome` |
 | `OutsideActivity.kt` | `OutsideActivity` | Bottom sheet "Not part of this phone" con tre azioni. Non esportata nel build principale; esportata con action `app.suran.OUTSIDE` nel manifest debug |
-| `SuranViewModel.kt` | `UiState`, `Screen`, `ChooseMode`, `SuranViewModel` | Stato UI e logica: caricamento config, lancio app, bozza di selezione, salvataggio, log |
+| `SuranViewModel.kt` | `UiState`, `Screen`, `ChooseMode`, `SuranViewModel` | Stato UI e logica: caricamento config, lancio app, bozza di selezione, salvataggio, log, `toggleTheme()` |
 | `Config.kt` | `Entry`, `Config`, `ConfigStore`, `normalize()` | Modello e persistenza di `config.json`; ordinamento (voci di catalogo nell'ordine del catalogo, poi le altre) e deduplica per `pkg` |
 | `Catalog.kt` | `Group`, `CatalogItem`, `CATALOG`, `catalogItem()`, `catalogCandidates()` | Catalogo curato; app installate candidate per voce (per elenco di pacchetti o per intent) |
 | `Apps.kt` | `InstalledApp`, `queryInstalled`, `launchApp`, `isDefaultHome`, `appLabelOf` | Accesso a `PackageManager`/`RoleManager` |
 | `EventLog.kt` | `EventLog` | Log JSON-lines locale |
 | `Session.kt` | `Session` | Stato in memoria condiviso tra Activity (`onceAllowed`, `lastOutside`) |
-| `Theme.kt` | `Ink`, `T`, `TA`, `pressable`, `sheetSurface` | Token di design, testo, stato "pressed", superficie dei bottom sheet |
-| `HomeScreen.kt` | `HomeScreen`, `HomeRow`, `HomeSetupSheet`, `QuietLink`, `NoticeStrip`, `rememberNow` | UI Home |
+| `ThemeStore.kt` | `ThemeStore` | Persistenza del tema in `filesDir/theme` ("dark" o "light"; assente o illeggibile = light) |
+| `Theme.kt` | `Ink`, `barStyle`, `T`, `TA`, `pressable`, `sheetSurface` | Token di design light/dark (`Ink.dark` è stato Compose; `Ink.scrim`), stile delle barre di sistema, testo, stato "pressed", superficie dei bottom sheet |
+| `HomeScreen.kt` | `HomeScreen`, `HomeRow`, `HomeSetupSheet`, `QuietLink`, `NoticeStrip`, `rememberNow` | UI Home; il footer ospita "Change" e il link del tema |
 | `ChooseScreen.kt` | `ChooseScreen`, `PrimaryButton`, `SelectRow`, `Dot`, `AmbiguitySheet` | UI di scelta/modifica; `PrimaryButton` è usato anche da Home e Outside |
 
 ## 3. Flussi applicativi
@@ -53,11 +54,13 @@ Un solo modulo (`:app`), package `app.suran`, nessuna directory di test.
 
 **Outside (solo demo in M1).** `OutsideActivity` legge l'extra `package`. Back → log e ritorno a `HomeActivity`. "Open once" → `Session.onceAllowed.add(pkg)` e lancio. "Add to this phone" → aggiunge `Entry(pkg, null, label)` a `config.json` con proprio `ConfigStore`, log, lancio. In M1 nessun codice legge `Session.onceAllowed` né imposta `Session.lastOutside`.
 
+**Tema.** `SuranApp.onCreate` legge `filesDir/theme` in `Ink.dark` (default light). Il link "Dark"/"Light" del footer chiama `SuranViewModel.toggleTheme()`: inverte `Ink.dark` (la UI si ricompone subito) e salva con `ThemeStore`. `HomeActivity` riapplica `enableEdgeToEdge(barStyle(dark))` al cambio e mette `Ink.bg` dietro il `Crossfade`; `OutsideActivity` legge `Ink.dark` in `onCreate`. Il tema vale solo dentro SURAN: non tocca il tema di sistema né altre app.
+
 ## 4. Gestione dello stato
 
 - **Fonte unica UI**: `UiState` in `MutableStateFlow` dentro `SuranViewModel`, letto con `collectAsStateWithLifecycle`. Campi: `config`, `installed`, `catalog`, `screen`, `chooseMode`, `draft`, `ambiguity`, `longTailExpanded`, `readyLine`, `homeSheet`, `launchError`, `saveError`, `isDefaultHome`.
 - **Stato locale Compose**: `OutsideActivity` (`shown`, `error`, `pkg`) e `HomeScreen` (`now` via broadcast `TIME_TICK`/`TIME_CHANGED`/`TIMEZONE_CHANGED`).
-- **Stato di processo**: `Session` (oggetto singleton, azzerato in `HomeActivity.onResume`).
+- **Stato di processo**: `Session` (oggetto singleton, azzerato in `HomeActivity.onResume`) e `Ink.dark` (tema, `mutableStateOf` globale, fuori da `UiState`: eccezione voluta, perché `Ink` è un `object` letto da ogni schermata).
 - `HomeActivity` e `OutsideActivity` non condividono il ViewModel: ciascuna usa un proprio `ConfigStore` e un proprio `EventLog` sullo stesso file.
 
 ## 5. Persistenza
@@ -65,6 +68,7 @@ Un solo modulo (`:app`), package `app.suran`, nessuna directory di test.
 | Dato | Posizione | Formato |
 |---|---|---|
 | Configurazione | `filesDir/config.json` (+ `config.json.tmp`) | `{"schema":1,"setupDone":bool,"entries":[{"pkg","intentId"|null,"appLabel"}]}`; scrittura su file temporaneo + `renameTo`; `load()` restituisce `null` se il file manca o su qualsiasi eccezione |
+| Tema | `filesDir/theme` | testo "dark" o "light"; assente, illeggibile o altro = light; scrittura diretta senza file temporaneo; errore di salvataggio ignorato |
 | Log eventi | `getExternalFilesDir(null)/events.jsonl` (fallback `filesDir`) | una riga JSON per evento: `t` (ISO 8601 con offset), `e` (tipo) + campi; taglio a 5.000 righe ogni 100 scritture **per istanza** di `EventLog` |
 
 Eventi: `app_open{defaultHome}`, `setup_done{entries}`, `config_saved{added,removed}`, `launch{pkg,intentId}`, `connectivity_open{target,action}`, `outside_shown{pkg}`, `outside_action{action[,pkg]}`.
@@ -95,4 +99,4 @@ Assenti: Material, Navigation, DI, Room/DataStore, librerie di test. `kotlinx.co
 - `OutsideActivity`: non esportata, `excludeFromRecents`, `taskAffinity=""`, tema traslucido `Theme.Suran.Outside`; il manifest debug la esporta con action `app.suran.OUTSIDE`.
 - `<queries>`: MAIN/LAUNCHER, DIAL, SENDTO `smsto`, VIEW `geo`, `STILL_IMAGE_CAMERA`.
 - Permessi: nessuno dichiarato.
-- Tema: `Theme.Suran` (genitore `android:Theme.Material.Light.NoActionBar`); `values-v27` aggiunge la barra di navigazione chiara. Icona: adaptive (`mipmap-anydpi-v26`) con foreground vettoriale derivato da `design/logo.svg`.
+- Tema: `Theme.Suran` (genitore `android:Theme.Material.Light.NoActionBar`); `values-v27` aggiunge la barra di navigazione chiara. Il tema XML resta chiaro (finestra iniziale e `windowBackground`); il tema scuro è applicato solo in Compose e alle icone delle barre di sistema. Icona: adaptive (`mipmap-anydpi-v26`) con foreground vettoriale derivato da `design/logo.svg`.

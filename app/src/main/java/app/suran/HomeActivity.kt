@@ -2,19 +2,22 @@ package app.suran
 
 import android.app.role.RoleManager
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 class HomeActivity : ComponentActivity() {
@@ -25,12 +28,14 @@ class HomeActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-        )
+        enableEdgeToEdge(statusBarStyle = barStyle(Ink.dark), navigationBarStyle = barStyle(Ink.dark))
         setContent {
             val s by vm.state.collectAsStateWithLifecycle()
+            val dark = Ink.dark
+            // System bar icons follow SURAN's theme, not the system's.
+            LaunchedEffect(dark) { enableEdgeToEdge(statusBarStyle = barStyle(dark), navigationBarStyle = barStyle(dark)) }
+            // Page colour behind the crossfade, so the (light) window background never shows through in dark.
+            Box(Modifier.fillMaxSize().background(Ink.bg)) {
             Crossfade(targetState = s.screen, animationSpec = tween(200), label = "screen") { screen ->
                 when (screen) {
                     Screen.HOME -> HomeScreen(
@@ -43,6 +48,7 @@ class HomeActivity : ComponentActivity() {
                         onConnectivity = ::openConnectivity,
                         onClearError = vm::clearLaunchError,
                         onClearReady = vm::clearReadyLine,
+                        onTheme = vm::toggleTheme,
                     )
                     Screen.CHOOSE -> ChooseScreen(
                         s = s,
@@ -58,6 +64,7 @@ class HomeActivity : ComponentActivity() {
                         onCta = { vm.save() },
                     )
                 }
+            }
             }
         }
     }

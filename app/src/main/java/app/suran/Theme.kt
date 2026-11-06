@@ -1,5 +1,6 @@
 package app.suran
 
+import androidx.activity.SystemBarStyle
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -11,7 +12,9 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -26,16 +29,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 object Ink {
-    // Palette of suran.tech (style.css), so app and website are one brand.
-    val bg = Color(0xFFF7F5F1)          // --color-bg
-    val ink = Color(0xFF1A1918)         // --color-text
-    val muted = Color(0xFF5F5B54)       // --color-text-secondary (6.2:1 on bg)
-    val line = Color(0xFFDEDAD2)        // --color-border: hairlines, disabled fill (never text)
-    val accent = Color(0xFF3F4A3C)      // --color-accent: primary button, selected dot
-    val accentPressed = Color(0xFF333C31) // --color-accent-hover
-    val surfaceAlt = Color(0xFFEFECE6)  // --color-bg-alt: pressed rows, quiet notice
-    val error = Color(0xFF9C4530)       // --color-error (5.8:1 on bg): failure text only
+    /**
+     * SURAN's own theme. Compose state: changing it recomposes every screen that reads an Ink colour.
+     * Default is light; loaded once in SuranApp, saved by SuranViewModel.toggleTheme(). Never follows the system theme.
+     */
+    var dark by mutableStateOf(false)
+
+    // Light: palette of suran.tech (style.css), so app and website are one brand. Values unchanged.
+    // Dark: the same warm neutrals, inverted; accent is #3F4A3C lightened. Contrast ratios in docs/TESTING.md.
+    val bg: Color get() = if (dark) Color(0xFF1A1918) else Color(0xFFF7F5F1)          // --color-bg
+    val ink: Color get() = if (dark) Color(0xFFF7F5F1) else Color(0xFF1A1918)         // --color-text
+    val muted: Color get() = if (dark) Color(0xFFB5B0A6) else Color(0xFF5F5B54)       // --color-text-secondary (light 6.2:1, dark 8.1:1 on bg)
+    val line: Color get() = if (dark) Color(0xFF3A3834) else Color(0xFFDEDAD2)        // --color-border: hairlines, disabled fill (never text)
+    val accent: Color get() = if (dark) Color(0xFFA3B59E) else Color(0xFF3F4A3C)      // --color-accent: primary button, selected dot
+    val accentPressed: Color get() = if (dark) Color(0xFF8FA08A) else Color(0xFF333C31) // --color-accent-hover
+    val surfaceAlt: Color get() = if (dark) Color(0xFF262422) else Color(0xFFEFECE6)  // --color-bg-alt: pressed rows, quiet notice
+    val error: Color get() = if (dark) Color(0xFFE08A72) else Color(0xFF9C4530)       // --color-error (light 5.8:1, dark 6.7:1 on bg): failure text only
+    /** Dim layer behind bottom sheets. Light is #1A1918 at 40%, as before. */
+    val scrim: Color get() = if (dark) Color(0xFF000000).copy(alpha = 0.6f) else Color(0xFF1A1918).copy(alpha = 0.4f)
 }
+
+/** Transparent system bars with icons matching the SURAN theme (dark icons on light, light icons on dark). */
+fun barStyle(dark: Boolean): SystemBarStyle =
+    if (dark) SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+    else SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
 
 @Composable
 fun T(
