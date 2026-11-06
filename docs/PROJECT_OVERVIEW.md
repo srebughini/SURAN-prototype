@@ -10,7 +10,7 @@ Un launcher standard espone l'intero telefono, distrazioni comprese. Il codice r
 
 ## Obiettivo del prototipo
 
-Validare M1 su dispositivi reali (riferimento: Honor 10 Lite, Android 9 / EMUI 9), non costruire un prodotto completo. Il README elenca le domande aperte da chiarire sul dispositivo (non sono ipotesi formali):
+Validare M1 su dispositivi reali (riferimento: OnePlus A6003 / OnePlus 6, Android 11 (API 30), OxygenOS 11.1.2.2, build ONEPLUS A6003_22_211125, dati rilevati dal dispositivo), non costruire un prodotto completo. Il README elenca le domande aperte da chiarire sul dispositivo (non sono ipotesi formali):
 
 - quante righe entrano davvero nella Home e con quale scala tipografica;
 - se il footer "Change" è abbastanza scopribile;

@@ -1,18 +1,20 @@
 # SURAN — Stato tecnico
 
+Dispositivo di riferimento (rilevato dal dispositivo): OnePlus A6003 (OnePlus 6), Android 11 (API 30), OxygenOS 11.1.2.2, build ONEPLUS A6003_22_211125.
+
 ## Rischi e debito tecnico
 
 | ID | Pri | Problema | Evidenza | Azione suggerita (non eseguita) |
 |---|---|---|---|---|
 | TS-01 | P0 | Il codice non è mai stato compilato né eseguito | README: "source only"; la lettura non ha mostrato errori di compilazione evidenti, ma non equivale a una build | Prima build e correzioni minime |
-| TS-02 | P0 | Impostazione come Home su Android 9 / EMUI non verificata (nessun dialog di ruolo; si passa da `ACTION_HOME_SETTINGS` o dal selettore di sistema) | `HomeActivity.requestHome`; README passo 4 | Provare su Honor 10 Lite e annotare il percorso che funziona |
+| TS-02 | P0 | Impostazione come Home su OnePlus 6 / Android 11 (API 30) non verificata. Il percorso da verificare è quello basato su `RoleManager` (API 29+: `createRequestRoleIntent(ROLE_HOME)`). Il ramo API 26–28 (`ACTION_HOME_SETTINGS`, poi selettore di sistema) resta per minSdk e non è il percorso del dispositivo di riferimento | `HomeActivity.requestHome`; README passo 4 (scritto per un altro dispositivo) | Provare su OnePlus 6 e annotare l'esito del dialog di ruolo |
 | TS-03 | P1 | `gradlew` e `gradle-wrapper.jar` non tra i file analizzati; presente solo `gradle-wrapper.properties` | Elenco file | Build da Android Studio o generare il wrapper (`TESTING.md`) |
 | TS-04 | P1 | Dopo "Add to this phone" la Home può mostrare una config vecchia: `onResume` non ricarica `config` e `OutsideActivity` scrive con un proprio `ConfigStore` | `SuranViewModel.onResume`; `OutsideActivity.onAdd` | Verificare su dispositivo; poi decidere con te se ricaricare la config |
 | TS-05 | P1 | In `onAdd`, se `config.json` manca o è illeggibile si salva `Config(setupDone=false, …)`: al riavvio riparte la scelta iniziale | `OutsideActivity.onAdd` | Verificare; in M1 è raggiungibile solo con l'intent di debug |
 | TS-06 | P1 | `ConfigStore.load()` restituisce `null` su qualsiasi eccezione: un file corrotto equivale a primo avvio, senza backup. `schema` è scritto ma non letto | `Config.kt` | Valutare dopo i primi test |
-| TS-07 | P1 | `queryInstalled`, `catalogCandidates` (una `queryIntentActivities` per voce) e `isDefaultHome` girano sul main thread alla creazione del ViewModel e a ogni `onResume`; anche i log scrivono su file dal main thread | `SuranViewModel`, `Apps.kt`, `Catalog.kt`, `EventLog.kt` | Misurare tempo di avvio e jank sul Honor |
-| TS-08 | P2 | EMUI può terminare il processo del launcher se la gestione batteria non è manuale | README passo 5 | Passo operativo di setup, da confermare |
-| TS-09 | P2 | Phone/Messages/Camera/Maps si risolvono per intent: su EMUI possono comparire app Huawei/Honor con etichette diverse, e Maps può avere più candidati | README deviazione 8; `catalogCandidates` | Verificare sul dispositivo |
+| TS-07 | P1 | `queryInstalled`, `catalogCandidates` (una `queryIntentActivities` per voce) e `isDefaultHome` girano sul main thread alla creazione del ViewModel e a ogni `onResume`; anche i log scrivono su file dal main thread | `SuranViewModel`, `Apps.kt`, `Catalog.kt`, `EventLog.kt` | Misurare tempo di avvio e jank sul OnePlus 6 |
+| TS-08 | P2 | OxygenOS può terminare il processo del launcher in base alle impostazioni di gestione batteria. Il passo 5 del README è scritto per un altro dispositivo | README passo 5 | Individuare sul dispositivo le impostazioni batteria applicabili a SURAN e confermare il passo operativo |
+| TS-09 | P2 | Phone/Messages/Camera/Maps si risolvono per intent: su OxygenOS possono comparire app OnePlus con etichette diverse, e Maps può avere più candidati | README deviazione 8; `catalogCandidates` | Verificare sul dispositivo |
 | TS-10 | P2 | `EventLog`: istanze multiple (Application, ViewModel, Outside) scrivono sullo stesso file; il conteggio per il taglio è per istanza, quindi il tetto di 5.000 righe non è garantito. Il file sta nella cartella external files e contiene i nomi dei pacchetti lanciati; su Android 9 le app con permesso di storage possono leggere quelle cartelle (da valutare) | `EventLog.kt` | Controllare dimensione e formato dopo uso reale |
 | TS-11 | P2 | Font grande, TalkBack: non provati. Le righe Home hanno `maxLines = 1` con ellissi | `HomeScreen.HomeRow`, `T()` | Checklist in `TESTING.md` |
 | TS-12 | P2 | Lista Home centrata, non più nella zona bassa del pollice: decisione UX aperta | README v0.1.5 | Giudicare sul dispositivo |
@@ -43,11 +45,11 @@ Il codice prevale. Nessuna è stata corretta (analisi senza modifiche).
 
 ## M2
 
-Fuori perimetro e non analizzato (`m2-spike/`). Il README segnala che la allowlist del servizio include `com.android.settings` e che va controllato il pacchetto Settings di EMUI: da verificare solo quando M2 sarà in ambito.
+Fuori perimetro e non analizzato (`m2-spike/`). Il README segnala che la allowlist del servizio include `com.android.settings` e che va controllato il pacchetto Settings di OxygenOS: da verificare solo quando M2 sarà in ambito.
 
 ## Informazioni non verificabili con i file disponibili
 
-- Compilazione, esecuzione, comportamento su emulatore o Honor 10 Lite.
+- Compilazione, esecuzione, comportamento su emulatore o OnePlus 6.
 - Contenuto di `m2-spike/`, `gradlew`, `gradle-wrapper.jar` e di eventuali altri file non inclusi nella conoscenza di progetto.
 - Hash `0556a85c…` del logo e identità con l'asset della landing page; esito di `check_logo.py`.
 - Manifest unito dell'APK (assenza effettiva di `INTERNET`).

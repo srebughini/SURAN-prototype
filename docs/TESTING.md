@@ -1,5 +1,7 @@
 # SURAN — Test e verifica
 
+Dispositivo di riferimento (rilevato dal dispositivo): OnePlus A6003 (OnePlus 6), Android 11 (API 30), OxygenOS 11.1.2.2, build ONEPLUS A6003_22_211125.
+
 ## 1. Test automatici esistenti
 
 **Nessuno.** Non ci sono `src/test` né `src/androidTest` e `app/build.gradle.kts` non dichiara librerie di test. L'unico controllo automatizzabile è `tools/check_logo.py` (script Python, **non eseguito**): confronta path, colore, spessore, cap e join tra `design/logo.svg` e `ic_launcher_foreground.xml`; con un argomento verifica anche l'hash del SVG rispetto a quello indicato. Funziona con Python 3.9+ se lanciato da script (`__file__` assoluto): non verificato.
@@ -24,9 +26,9 @@ Requisiti (README): Android Studio Koala 2024.1 o successivo, JDK 17. Versioni: 
 
 ## 4. Ambienti
 
-**Emulatore** (README v0.1.1): immagine **Google Play**, non "Google APIs". API 28 corrisponde al Honor 10 Lite; API 34 prova il dialog di ruolo Home. Accedere a un account Google e installare le app da provare; WhatsApp è inaffidabile su emulatore (basta la sua schermata di registrazione). Mancano le app Honor, quindi Phone/Messages/Camera si risolvono con le app Google/AOSP.
+**Emulatore** (README v0.1.1): immagine **Google Play**, non "Google APIs". API 30 corrisponde al OnePlus 6 (Android 11) e prova il dialog di ruolo Home (`RoleManager`). Accedere a un account Google e installare le app da provare; WhatsApp è inaffidabile su emulatore (basta la sua schermata di registrazione). Mancano le app OnePlus, quindi Phone/Messages/Camera si risolvono con le app Google/AOSP.
 
-**Honor 10 Lite**: passi di setup 1–6 nel README, sezione "Install and set up the Honor 10 Lite" (debug USB, installazione, Home predefinita, batteria manuale, notifiche). Annotare cosa funziona davvero al passo 4.
+**OnePlus 6** (A6003, Android 11 / API 30, OxygenOS 11.1.2.2, build ONEPLUS A6003_22_211125): i passi di setup 1–6 e il titolo della sezione "Install and set up the Honor 10 Lite" del README sono scritti per un altro dispositivo e vanno riletti per OnePlus 6 (debug USB, installazione, Home predefinita, batteria, notifiche). Annotare cosa funziona davvero al passo 4.
 
 **Comandi utili**
 - Log: `adb pull /sdcard/Android/data/app.suran/files/events.jsonl`
@@ -58,9 +60,9 @@ Legenda ambiente: **B** build · **E** emulatore · **D** solo dispositivo fisic
 - [ ] Wi-Fi e Bluetooth aprono le schermate di sistema; Back e Home riportano a SURAN invariata (su alcune immagini emulatore la pagina Bluetooth può mancare: deve intervenire il fallback)
 - [ ] App con login (Google, ecc.): si apre la schermata dell'app; nessun crash SURAN
 
-### Home predefinita (E API 28 e 34, D)
+### Home predefinita (E API 30, D)
 - [ ] Dopo Start compare "Make SURAN your Home"; "Not now" porta alla Home con la riga discreta; la riga riapre lo sheet
-- [ ] "Choose SURAN as Home" apre la schermata di Android (API 34: dialog di ruolo; API 28 e Honor: impostazioni Home)
+- [ ] "Choose SURAN as Home" apre il dialog di ruolo di Android (percorso `RoleManager`, API 29+; su OnePlus 6 / Android 11 è il percorso atteso)
 - [ ] Dopo la scelta sheet e riga spariscono; il tasto Home mostra SURAN
 - [ ] Tasto Home dentro un'app → SURAN
 - [ ] D: riavvio: config persistente e SURAN ancora Home
@@ -69,7 +71,7 @@ Legenda ambiente: **B** build · **E** emulatore · **D** solo dispositivo fisic
 - [ ] APK installabile via sideload
 - [ ] Chiamata di emergenza dalla schermata di blocco e dal dialer funziona
 - [ ] Modalità aereo/senza rete: tutto funziona
-- [ ] EMUI non termina SURAN con la gestione batteria manuale
+- [ ] OxygenOS non termina SURAN con le impostazioni batteria applicabili (da individuare sul dispositivo)
 - [ ] Quali app risolvono Phone/Messages/Camera/Maps (TS-09)
 - [ ] L'aspetto è chiaramente diverso dal launcher stock
 - [ ] Icona launcher = segno "S" canonico (Impostazioni → App e launcher)
@@ -88,7 +90,7 @@ Legenda ambiente: **B** build · **E** emulatore · **D** solo dispositivo fisic
 - [ ] TS-06: con `config.json` illeggibile (su debug via `run-as app.suran`) l'app riparte dalla scelta iniziale?
 - [ ] TS-07: tempo di avvio a freddo e fluidità con molte app installate
 - [ ] TS-10: formato righe di `events.jsonl` e crescita del file dopo uso reale
-- [ ] TS-02: percorso effettivo per impostare Home su Honor 10 Lite
+- [ ] TS-02: esito del dialog di ruolo Home su OnePlus 6 (Android 11)
 
 ## 6. Registrazione degli esiti
 
