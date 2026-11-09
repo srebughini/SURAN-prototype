@@ -2,7 +2,7 @@
 
 Dispositivo di riferimento (rilevato dal dispositivo): OnePlus A6003 (OnePlus 6), Android 11 (API 30), OxygenOS 11.1.2.2, build ONEPLUS A6003_22_211125.
 
-**Stato:** smoke test #1 (ST1) superato su questo dispositivo; esiti e voci non ancora provate in §6. Nella checklist `[x]` = confermato in ST1; `[ ]` = non confermato o non registrato.
+**Stato:** smoke test #1 (ST1) superato su questo dispositivo; esiti e voci non ancora provate in §6. Smoke test #2 (ST2, tema scuro): esito complessivo positivo, voci non registrate singolarmente. Nella checklist `[x]` = confermato in ST1; `[ ]` = non confermato o non registrato.
 
 ## 1. Test automatici esistenti
 
@@ -89,21 +89,21 @@ Legenda ambiente: **B** build · **E** emulatore · **D** solo dispositivo fisic
 - [ ] L'intent demo mostra lo sheet con tre azioni nell'ordine previsto
 - [ ] Back, "Open once", "Add to this phone" si comportano come nel README
 
-### Tema scuro (F-18; D su OnePlus 6, non ancora eseguito)
-- [ ] B: sync e compilazione dopo la modifica (nuovo file `ThemeStore.kt`; modifiche in `Theme.kt`, `HomeActivity`, `HomeScreen`, `ChooseScreen`, `OutsideActivity`, `SuranApp`, `SuranViewModel`)
+### Tema scuro (F-18; D su OnePlus 6). ST2: esito complessivo positivo; le voci seguenti restano `[ ]` perché non registrate una per una
+- [x] B: sync e compilazione dopo la modifica (ST2; nuovo file `ThemeStore.kt`; modifiche in `Theme.kt`, `HomeActivity`, `HomeScreen`, `ChooseScreen`, `OutsideActivity`, `SuranApp`, `SuranViewModel`)
 - [ ] Light invariato: Home, Choose, sheet "Make SURAN your Home", "Which one for …?", Outside (debug) identici a prima della modifica
 - [ ] Primo avvio, o dopo cancellazione dei dati dell'app: tema light
 - [ ] Footer Home: "This phone is for N things · Change" e a destra "Dark"; il tocco su "Change" apre ancora la modifica, il tocco su "Dark" cambia tema
 - [ ] Cambio immediato (nessun riavvio, nessuna perdita di stato): lo sfondo diventa scuro, l'etichetta diventa "Light", le icone di stato e navigazione diventano chiare; il ritorno a light le riporta scure
 - [ ] Dark, tutte le schermate: Home (ora, data, righe, "Not installed", ready line, riga "Make SURAN your Home", link Wi-Fi/Bluetooth, footer), Choose (titolo, gruppi, righe selezionate e non, pallino, "Everything else", bottone attivo e disattivo, "Couldn't save"), sheet Home, "Which one for …?", Outside (debug)
 - [ ] Transizione Home ↔ Choose in dark: nessun lampo chiaro durante il crossfade
-- [ ] Persistenza: scelto dark, chiudere SURAN (dai recenti) e riaprire → dark; riavvio del dispositivo → SURAN ancora Home e ancora dark; lo stesso con light
+- [x] Persistenza (ST2: confermata dopo riavvio del dispositivo; chiusura dai recenti e caso light non distinti): scelto dark, chiudere SURAN (dai recenti) e riaprire → dark; riavvio del dispositivo → SURAN ancora Home e ancora dark; lo stesso con light
 - [ ] Debug: `adb shell run-as app.suran cat files/theme` contiene `dark` o `light`; `config.json` e `events.jsonl` non cambiano per il solo cambio tema
-- [ ] Avvio a freddo in dark (TS-18): descrivere il lampo chiaro, se c'è
-- [ ] Footer con font al massimo, con 1 e con 10 voci (TS-19): nessun testo tagliato, "Dark"/"Light" raggiungibile
+- [x] Avvio a freddo in dark (TS-18): descrivere il lampo chiaro, se c'è — ST2: il lampo c'è; durata e percezione non descritte
+- [x] Footer con font al massimo (ST2: ok; numero di voci non registrato; TS-19 chiusa), con 1 e con 10 voci (TS-19): nessun testo tagliato, "Dark"/"Light" raggiungibile
 - [ ] TalkBack: il link viene letto come "Switch to dark theme" / "Switch to light theme"
-- [ ] Tema di sistema attivo e disattivo (e l'eventuale opzione OxygenOS per le app di terze parti; percorso da annotare): SURAN appare uguale in entrambi i casi (TS-20)
-- [ ] App esterne e schermate di sistema (Wi-Fi, Bluetooth, impostazioni Home) non cambiano aspetto per effetto del tema di SURAN
+- [x] (ST2: TS-20 chiusa su indicazione dell'utente; dettagli non registrati) Tema di sistema attivo e disattivo (e l'eventuale opzione OxygenOS per le app di terze parti; percorso da annotare): SURAN appare uguale in entrambi i casi (TS-20)
+- [x] App esterne e schermate di sistema (Wi-Fi, Bluetooth, impostazioni Home) non cambiano aspetto per effetto del tema di SURAN — ST2: l'utente riferisce che cambia solo SURAN
 - [ ] Giudizio visivo sulla leggibilità del dark (testo, hairline, bottone disattivo) in uso reale; registrare l'esito
 
 **Contrasti WCAG calcolati con script sui valori in `Theme.kt` (calcolo, non misura su schermo).** Light: testo 16,1:1, secondario 6,2:1, accento 8,5:1 (invariati).
@@ -143,3 +143,9 @@ Per ogni sessione: data, build (variante), ambiente, voci provate, esito. Poi ag
   - Scelta e modifica: dettagli di Choose, modifica, "Not installed", ambiguità, ready line.
   - Dati e sistema: contenuto del log eventi, latenza di ritorno a Home (AU-05), impostazioni batteria OxygenOS (AU-06), app risolte per Phone/Messages/Maps/Camera (AU-07).
   - Altro: chiamata di emergenza, modalità aereo, font grande, TalkBack, manifest unito senza `INTERNET`, `check_logo.py`.
+
+### ST2 — smoke test #2, tema scuro (registrato il 2026-11-06)
+
+- **Ambiente:** OnePlus A6003 (OnePlus 6), Android 11 (API 30), OxygenOS 11.1.2.2. Build con la modifica del tema scuro (patch `suran-dark-theme`); variante e metodo non registrati.
+- **Esito:** l'utente riferisce che funziona tutto. Compilazione e avvio con la modifica riusciti. Confermato: il lampo chiaro all'avvio a freddo in dark c'è (TS-18); il footer è ok con font al massimo (TS-19, chiusa); il tema cambia solo SURAN; la scelta persiste anche dopo il riavvio del dispositivo; TS-20 chiusa su indicazione dell'utente.
+- **Non registrati:** cambio immediato, aspetto del light invariato schermata per schermata, TalkBack, giudizio sulla leggibilità, numero di voci nel test del footer. TS-21 resta aperta.

@@ -216,7 +216,7 @@ primary label only. The "Not installed" line for unavailable apps is kept. Layou
 - **Palette:** the same warm neutrals, inverted, with the accent #3F4A3C lightened. bg #1A1918, text #F7F5F1, secondary #B5B0A6, hairline/disabled #3A3834, quiet surface #262422, accent #A3B59E (pressed #8FA08A), error #E08A72, sheet scrim black at 60%. No blue, no other greens. Contrast ratios (calculated, not measured on screen): `docs/TESTING.md` §5.
 - **How:** `Ink` colours became getters on `Ink.dark` (Compose state), so screens did not change. New `Ink.scrim` replaces `Ink.ink.copy(alpha = 0.4f)` in three sheets; `barStyle()` sets the system bar icons; `Ink.bg` sits behind the `Crossfade`. No new dependency, no new log event, `config.json` untouched.
 - **Files:** `Theme.kt`, `ThemeStore.kt` (new), `SuranApp.kt`, `SuranViewModel.kt`, `HomeActivity.kt`, `HomeScreen.kt`, `ChooseScreen.kt`, `OutsideActivity.kt`.
-- **Known limits:** a brief light flash at cold start in dark (the system starting window stays light); the footer may wrap with very large fonts. Not built or run in the authoring environment: test on the OnePlus 6 (checklist in `docs/TESTING.md` §5).
+- **Known limits:** a brief light flash at cold start in dark (the system starting window stays light); the footer may wrap with very large fonts. Not built or run in the authoring environment. The author reports it works on the OnePlus 6 (ST2): the theme change affects SURAN only, it persists, the footer is fine at the largest font; the brief light flash at cold start in dark is confirmed (`docs/TESTING.md` §5-6).
 
 ## Known limitations
 - Not compiled or device-tested. Not tested on any device other than the planned Honor 10 Lite.

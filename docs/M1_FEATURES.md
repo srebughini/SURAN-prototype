@@ -2,7 +2,7 @@
 
 **Legenda stato:** Implementata = presente e coerente nel sorgente · Parziale = presente ma incompleta o con limiti noti · Non implementata.
 
-**Verifica:** ST1 = smoke test #1 su OnePlus 6 (Android 11, API 30), `TESTING.md` §6. Scelta iniziale, salvataggio e catalogo sono stati attraversati per arrivare alla Home, ma gli esiti puntuali non sono stati registrati: restano "Non verificata".
+**Verifica:** ST1 = smoke test #1 su OnePlus 6 (Android 11, API 30), `TESTING.md` §6. Scelta iniziale, salvataggio e catalogo sono stati attraversati per arrivare alla Home, ma gli esiti puntuali non sono stati registrati: restano "Non verificata". ST2 = smoke test #2 sul tema scuro (F-18), stesso dispositivo: esito complessivo positivo riferito dall'utente, voci non registrate singolarmente (`TESTING.md` §6).
 
 | ID | Funzionalità | Stato | Verifica | Note |
 |---|---|---|---|---|
@@ -23,7 +23,7 @@
 | F-15 | Nessun permesso `INTERNET`; `allowBackup=false` | Implementata | Non verificata | Visto nel manifest sorgente; manifest unito dell'APK non ispezionato |
 | F-16 | Accessibilità di base: `semantics` con etichette, ruoli (Button, Checkbox), aree di tocco ≥ 48 dp | Implementata | Non verificata | Presenza nel codice; TalkBack non provato (TS-11) |
 | F-17 | Vincoli dichiarati: solo portrait, solo inglese; tema chiaro di default (il tema scuro è opzionale: F-18) | Implementata | Non verificata | TS-15 |
-| F-18 | Tema scuro opzionale, solo dentro SURAN: link "Dark"/"Light" nel footer Home accanto a "Change" (mostra il tema a cui si passa); cambio immediato; default light; scelta salvata in `filesDir/theme` e ripristinata all'avvio; non segue il tema di sistema; icone delle barre di sistema coerenti; tema chiaro invariato | Implementata | Non verificata | `Theme.kt` (`Ink.dark`, `Ink.scrim`, `barStyle`), `ThemeStore.kt`. Contrasti calcolati, non misurati su schermo: `TESTING.md` §5. TS-18, TS-19, TS-20, TS-21. Nessun evento di log aggiunto |
+| F-18 | Tema scuro opzionale, solo dentro SURAN: link "Dark"/"Light" nel footer Home accanto a "Change" (mostra il tema a cui si passa); cambio immediato; default light; scelta salvata in `filesDir/theme` e ripristinata all'avvio; non segue il tema di sistema; icone delle barre di sistema coerenti; tema chiaro invariato | Implementata | Verificata (ST2, OnePlus 6): cambia solo SURAN, la scelta persiste dopo il riavvio del dispositivo, footer ok con font al massimo, lampo chiaro all'avvio a freddo presente (TS-18). Non registrati: cambio immediato, contrasti, TalkBack. TS-20 chiusa | `Theme.kt` (`Ink.dark`, `Ink.scrim`, `barStyle`), `ThemeStore.kt`. Contrasti calcolati, non misurati su schermo: `TESTING.md` §5. TS-18, TS-19, TS-20, TS-21. Nessun evento di log aggiunto |
 
 ## Non implementate (in M1)
 
