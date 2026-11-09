@@ -94,7 +94,7 @@ fun ChooseScreen(
                         items.forEach { (item, cands) ->
                             val chosen = s.draft.firstOrNull { it.intentId == item.id }
                             val sub = when {
-                                chosen != null -> chosen.appLabel
+                                chosen != null -> s.installed.firstOrNull { it.pkg == chosen.pkg }?.label ?: chosen.appLabel
                                 cands.size == 1 -> cands[0].label
                                 else -> null
                             }?.takeIf { !it.equals(item.label, ignoreCase = true) }

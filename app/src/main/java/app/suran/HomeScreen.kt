@@ -124,7 +124,9 @@ fun HomeScreen(
                 ) {
                     cfg.entries.forEach { e ->
                         val inst = installed[e.pkg]
-                        val primary = catalogItem(e.intentId)?.label ?: e.appLabel
+                        // Installed: the name Android reports now (follows the system language, catalog items included).
+                        // Not installed: catalog label, then the label saved in config.json.
+                        val primary = inst?.label ?: catalogItem(e.intentId)?.label ?: e.appLabel
                         // One label per app. Only the "Not installed" state shows a second line.
                         val secondary = if (inst == null) "Not installed" else null
                         HomeRow(primary, secondary, dim = inst == null) { onRow(e) }
