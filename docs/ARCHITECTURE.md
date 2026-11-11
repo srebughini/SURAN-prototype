@@ -22,10 +22,10 @@ Un solo modulo (`:app`), package `app.suran`, nessuna directory di test.
 
 | File | Elementi principali | Responsabilità |
 |---|---|---|
-| `SuranApp.kt` | `SuranApp` | `Application`; carica il tema (`Ink.dark`) prima di qualsiasi Activity; logga `app_open{defaultHome}` a ogni avvio processo |
+| `SuranApp.kt` | `SuranApp` | `Application`; carica il tema (`Ink.dark`) prima di qualsiasi Activity; logga `app_open{defaultHome}` a ogni avvio **del processo**, anche quando lo avvia il sistema per un altro motivo (per esempio il servizio notifiche): non misura l'apertura di SURAN da parte dell'utente |
 | `HomeActivity.kt` | `HomeActivity` | Unica Activity UI di M1 (filtri HOME e LAUNCHER, `singleTask`, portrait). Ospita Compose; `Crossfade` tra `Screen.HOME` e `Screen.CHOOSE`; `onResume` → `Session.reset()` + `vm.onResume()`; `onNewIntent` (tasto Home); `openConnectivity`; `requestHome` |
 | `OutsideActivity.kt` | `OutsideActivity` | Bottom sheet "Not part of this phone" con tre azioni. Non esportata nel build principale; esportata con action `app.suran.OUTSIDE` nel manifest debug |
-| `SuranViewModel.kt` | `UiState`, `Screen`, `ChooseMode`, `SuranViewModel` | Stato UI e logica: caricamento config, lancio app, bozza di selezione, salvataggio, log, `toggleTheme()` |
+| `SuranViewModel.kt` | `UiState`, `Screen`, `ChooseMode`, `SuranViewModel` | Stato UI e logica: caricamento config, lancio app, bozza di selezione, salvataggio, log, `toggleTheme()`; nell'`init` logga `home_ui_started{defaultHome}` |
 | `Config.kt` | `Entry`, `Config`, `ConfigStore`, `normalize()` | Modello e persistenza di `config.json`; ordinamento (voci di catalogo nell'ordine del catalogo, poi le altre) e deduplica per `pkg` |
 | `Catalog.kt` | `Group`, `CatalogItem`, `CATALOG`, `catalogItem()`, `catalogCandidates()` | Catalogo curato; app installate candidate per voce (per elenco di pacchetti o per intent) |
 | `Apps.kt` | `InstalledApp`, `queryInstalled`, `launchApp`, `isDefaultHome`, `appLabelOf` | Accesso a `PackageManager`/`RoleManager` |
@@ -33,12 +33,13 @@ Un solo modulo (`:app`), package `app.suran`, nessuna directory di test.
 | `Session.kt` | `Session` | Stato in memoria condiviso tra Activity (`onceAllowed`, `lastOutside`) |
 | `ThemeStore.kt` | `ThemeStore` | Persistenza del tema in `filesDir/theme` ("dark" o "light"; assente o illeggibile = light) |
 | `Theme.kt` | `Ink`, `barStyle`, `T`, `TA`, `pressable`, `sheetSurface` | Token di design light/dark (`Ink.dark` è stato Compose; `Ink.scrim`), stile delle barre di sistema, testo, stato "pressed", superficie dei bottom sheet |
-| `HomeScreen.kt` | `HomeScreen`, `HomeRow`, `HomeSetupSheet`, `QuietLink`, `NoticeStrip`, `rememberNow` | UI Home; il footer ospita "Change" e il link del tema |
-| `ChooseScreen.kt` | `ChooseScreen`, `PrimaryButton`, `SelectRow`, `Dot`, `AmbiguitySheet` | UI di scelta/modifica; `PrimaryButton` è usato anche da Home e Outside |
+| `HomeScreen.kt` | `HomeScreen`, `HomeRow`, `HomeSetupSheet`, `QuietLink`, `NoticeStrip`, `rememberNow` | UI Home; il footer ospita "Change" e il link del tema; l'etichetta di riga è `InstalledApp.label` se l'app è installata, poi quella di catalogo, poi `Entry.appLabel` |
+| `ChooseScreen.kt` | `ChooseScreen`, `PrimaryButton`, `SelectRow`, `Dot`, `AmbiguitySheet` | UI di scelta/modifica; `PrimaryButton` è usato anche da Home e Outside; la riga secondaria delle voci di catalogo scelte usa `InstalledApp.label`, poi `Entry.appLabel` |
+| `NotificationGate.kt` | `NotificationGate` | `NotificationListenerService`, fase 1 **solo registrazione** (sperimentale): per ogni notifica calcola la decisione che SURAN prenderebbe e registra `notification_decision`; non cancella né modifica nulla; legge solo package, categoria e flag; legge `config.json` senza scriverlo |
 
 ## 3. Flussi applicativi
 
-**Avvio.** `SuranApp.onCreate` registra `app_open`. `SuranViewModel.initial()` carica `config.json`, interroga le app installate e i candidati di catalogo. Se `setupDone` e `entries` non vuote → `Screen.HOME`; altrimenti `Screen.CHOOSE` in modalità `FIRST_RUN`. A ogni `onResume` il ViewModel aggiorna app installate, candidati e `isDefaultHome` (non ricarica `config`) e chiude `homeSheet` se SURAN è già Home.
+**Avvio.** `SuranApp.onCreate` carica il tema e registra `app_open` (avvio del processo). L'`init` di `SuranViewModel` registra `home_ui_started` (avvio dell'interfaccia Home: nuova Activity o ripristino dopo kill del processo; non su ricreazione per cambio configurazione; non quando il processo parte per il servizio notifiche; non indica l'intenzione dell'utente, perché Android può avviare SURAN come Home). `SuranViewModel.initial()` carica `config.json`, interroga le app installate e i candidati di catalogo. Se `setupDone` e `entries` non vuote → `Screen.HOME`; altrimenti `Screen.CHOOSE` in modalità `FIRST_RUN`. A ogni `onResume` il ViewModel aggiorna app installate, candidati e `isDefaultHome` (non ricarica `config`) e chiude `homeSheet` se SURAN è già Home.
 
 **Primo setup.** Choose → selezione in `draft` → `save()`: `normalize` → `ConfigStore.save` → log `setup_done` → Home. Se SURAN è già Home: `readyLine`; altrimenti: `homeSheet` (sheet esplicativo).
 
@@ -54,6 +55,10 @@ Un solo modulo (`:app`), package `app.suran`, nessuna directory di test.
 
 **Outside (solo demo in M1).** `OutsideActivity` legge l'extra `package`. Back → log e ritorno a `HomeActivity`. "Open once" → `Session.onceAllowed.add(pkg)` e lancio. "Add to this phone" → aggiunge `Entry(pkg, null, label)` a `config.json` con proprio `ConfigStore`, log, lancio. In M1 nessun codice legge `Session.onceAllowed` né imposta `Session.lastOutside`.
 
+**Etichette delle app.** `queryInstalled` ricalcola `InstalledApp.label` con `loadLabel` a ogni `onResume`, quindi segue la lingua di sistema. Home e Choose mostrano quel nome per le app installate (voci di catalogo comprese); per le app non installate usano l'etichetta di catalogo, poi `Entry.appLabel` salvato in `config.json` (che non viene riscritto).
+
+**Notifiche (fase 1, solo registrazione).** Il sistema associa `NotificationGate` solo se l'utente concede l'accesso alle notifiche. Per ogni `onNotificationPosted` la prima regola che scatta decide (`allow` o `would_suppress`): config assente o `setupDone` falso · SURAN · app selezionata · whitelist verificata · whitelist da verificare · categoria `CALL`/`ALARM`/`SYSTEM`/`ERROR` · ongoing o foreground service · SMS predefinita · dialer predefinito · package senza icona nel launcher · altrimenti `would_suppress`. Si registra una riga `notification_decision{pkg,category,decision,reason}` per combinazione (package, categoria, motivo) e per ciclo di vita del processo. `config.json` viene riletto quando cambia `lastModified`. `onListenerDisconnected` chiede `requestRebind` (effetto su OxygenOS 11 non verificato). Nessuna notifica viene cancellata, posticipata o modificata.
+
 **Tema.** `SuranApp.onCreate` legge `filesDir/theme` in `Ink.dark` (default light). Il link "Dark"/"Light" del footer chiama `SuranViewModel.toggleTheme()`: inverte `Ink.dark` (la UI si ricompone subito) e salva con `ThemeStore`. `HomeActivity` riapplica `enableEdgeToEdge(barStyle(dark))` al cambio e mette `Ink.bg` dietro il `Crossfade`; `OutsideActivity` legge `Ink.dark` in `onCreate`. Il tema vale solo dentro SURAN: non tocca il tema di sistema né altre app.
 
 ## 4. Gestione dello stato
@@ -61,7 +66,7 @@ Un solo modulo (`:app`), package `app.suran`, nessuna directory di test.
 - **Fonte unica UI**: `UiState` in `MutableStateFlow` dentro `SuranViewModel`, letto con `collectAsStateWithLifecycle`. Campi: `config`, `installed`, `catalog`, `screen`, `chooseMode`, `draft`, `ambiguity`, `longTailExpanded`, `readyLine`, `homeSheet`, `launchError`, `saveError`, `isDefaultHome`.
 - **Stato locale Compose**: `OutsideActivity` (`shown`, `error`, `pkg`) e `HomeScreen` (`now` via broadcast `TIME_TICK`/`TIME_CHANGED`/`TIMEZONE_CHANGED`).
 - **Stato di processo**: `Session` (oggetto singleton, azzerato in `HomeActivity.onResume`) e `Ink.dark` (tema, `mutableStateOf` globale, fuori da `UiState`: eccezione voluta, perché `Ink` è un `object` letto da ogni schermata).
-- `HomeActivity` e `OutsideActivity` non condividono il ViewModel: ciascuna usa un proprio `ConfigStore` e un proprio `EventLog` sullo stesso file.
+- `HomeActivity` e `OutsideActivity` non condividono il ViewModel: ciascuna usa un proprio `ConfigStore` e un proprio `EventLog` sullo stesso file. Anche `NotificationGate` ha un proprio `EventLog` (altra istanza sullo stesso file: TS-10) e una cache in memoria (`config`, dedupe, icone del launcher) senza persistenza.
 
 ## 5. Persistenza
 
@@ -71,7 +76,7 @@ Un solo modulo (`:app`), package `app.suran`, nessuna directory di test.
 | Tema | `filesDir/theme` | testo "dark" o "light"; assente, illeggibile o altro = light; scrittura diretta senza file temporaneo; errore di salvataggio ignorato |
 | Log eventi | `getExternalFilesDir(null)/events.jsonl` (fallback `filesDir`) | una riga JSON per evento: `t` (ISO 8601 con offset), `e` (tipo) + campi; taglio a 5.000 righe ogni 100 scritture **per istanza** di `EventLog` |
 
-Eventi: `app_open{defaultHome}`, `setup_done{entries}`, `config_saved{added,removed}`, `launch{pkg,intentId}`, `connectivity_open{target,action}`, `outside_shown{pkg}`, `outside_action{action[,pkg]}`.
+Eventi: `app_open{defaultHome}` (avvio del processo), `home_ui_started{defaultHome}` (avvio dell'interfaccia Home), `notification_listener_connected`, `notification_listener_disconnected`, `notification_decision{pkg,category,decision,reason}` (mai titolo, testo o extras), `setup_done{entries}`, `config_saved{added,removed}`, `launch{pkg,intentId}`, `connectivity_open{target,action}`, `outside_shown{pkg}`, `outside_action{action[,pkg]}`.
 
 Nessun database, SharedPreferences o DataStore. `allowBackup=false`.
 
@@ -98,5 +103,6 @@ Assenti: Material, Navigation, DI, Room/DataStore, librerie di test. `kotlinx.co
 - `HomeActivity`: `exported`, `singleTask`, portrait; filtri MAIN+HOME+DEFAULT e MAIN+LAUNCHER.
 - `OutsideActivity`: non esportata, `excludeFromRecents`, `taskAffinity=""`, tema traslucido `Theme.Suran.Outside`; il manifest debug la esporta con action `app.suran.OUTSIDE`.
 - `<queries>`: MAIN/LAUNCHER, DIAL, SENDTO `smsto`, VIEW `geo`, `STILL_IMAGE_CAMERA`.
-- Permessi: nessuno dichiarato.
+- `NotificationGate`: servizio esportato con `BIND_NOTIFICATION_LISTENER_SERVICE` e action `android.service.notification.NotificationListenerService`; funziona solo dopo la concessione manuale dell'accesso alle notifiche.
+- Permessi: nessun `uses-permission` dichiarato nel manifest sorgente (il manifest unito dell'APK può aggiungerne di proprie delle librerie: da controllare, TESTING §5; il permesso di binding del servizio non è un `uses-permission`); `INTERNET` assente.
 - Tema: `Theme.Suran` (genitore `android:Theme.Material.Light.NoActionBar`); `values-v27` aggiunge la barra di navigazione chiara. Il tema XML resta chiaro (finestra iniziale e `windowBackground`); il tema scuro è applicato solo in Compose e alle icone delle barre di sistema. Icona: adaptive (`mipmap-anydpi-v26`) con foreground vettoriale derivato da `design/logo.svg`.

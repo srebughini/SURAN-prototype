@@ -3,8 +3,12 @@
 Native Android (Kotlin + Jetpack Compose), one module, package `app.suran`, minSdk 26, targetSdk 34.
 Reference device: Honor 10 Lite, Android 9 / EMUI 9.
 
-**Status: source only. It has NOT been compiled or run.** The environment it was written in cannot reach the
-Android SDK or Maven repositories. Expect a few small compile fixes on first sync.
+**Status:** built, installed and tested on the OnePlus 6 (ST1, ST2 and ST3, results in `docs/TESTING.md` §6; many items were
+not recorded one by one). v0.1.8–v0.1.10 (app labels from Android, `home_ui_started`, NotificationGate phase 1) were built with Gradle
+(Android Studio, debug) and are **only partly verified on the device**: labels verified by the user; `home_ui_started` and
+NotificationGate seen working in the log; most decision branches, the 2FA whitelist, `requestRebind` and OxygenOS battery behaviour
+are **not verified**. `m2-spike/` is not compiled. The authoring environment has no Android SDK or Gradle: builds and device tests
+are run by the user.
 
 ## Files
 ```
@@ -19,9 +23,10 @@ app/src/main/java/app/suran/
   Apps.kt            installed apps, launch, default-Home check, labels
   EventLog.kt        local events.jsonl (cap 5,000 lines)
   Session.kt         in-memory "Open once" + Outside loop guard
-  SuranApp.kt        loads the theme, logs app_open{defaultHome}
+  SuranApp.kt        loads the theme, logs app_open{defaultHome} (process start)
+  NotificationGate.kt  notification listener, phase 1: log-only, never touches a notification
   ThemeStore.kt      theme file (filesDir/theme: "dark" or "light")
-  SuranViewModel.kt  single UiState StateFlow
+  SuranViewModel.kt  single UiState StateFlow; logs home_ui_started{defaultHome}
   Theme.kt           tokens (light + dark) + text + press helper
   HomeScreen.kt, ChooseScreen.kt, HomeActivity.kt, OutsideActivity.kt
 m2-spike/            NOT compiled: accessibility service, allowlist, instructions
@@ -33,15 +38,22 @@ m2-spike/            NOT compiled: accessibility service, allowlist, instruction
 2. Build → Build APK(s) with the **debug** variant (needed for the Outside demo intent).
    CLI: `./gradlew assembleDebug` → `app/build/outputs/apk/debug/app-debug.apk`.
 
-## Install and set up the Honor 10 Lite
+## Install and set up the OnePlus 6
 1. Settings → About phone → tap Build number 7 times; Developer options → USB debugging on.
 2. `adb install -r app-debug.apk` (or copy the APK to the phone and allow "Install unknown apps" for your file manager).
 3. Open SURAN from the normal launcher. Choose what the phone is for → "Start with these N".
-4. Android 9 has no Home role dialog. SURAN opens Settings (`ACTION_HOME_SETTINGS`) and shows a short toast.
-   If that page lists no launchers, use Settings → Apps → Default apps (path varies on EMUI), or press Home and pick
-   SURAN → Always. **Write down what actually works on this device.**
-5. Settings → Battery → App launch → SURAN → manage manually, all toggles on (EMUI may otherwise kill it).
-6. Concierge step: turn off notifications for apps not chosen (SURAN does not intercept notifications).
+4. Android 11 shows the system Home-role dialog (`RoleManager`). In ST1 SURAN was set as Home; the exact screen was not recorded.
+   **Write down what the dialog looks like and what happens if you deny it.**
+5. OxygenOS may stop a launcher according to its battery settings. The exact setting path on OxygenOS 11 is NOT verified
+   (TS-08): find it on the device, apply it, and write it down.
+6. Notifications of apps not chosen. SURAN does not suppress notifications. Since v0.1.10 an experimental, log-only service
+   (`NotificationGate`) can record what it *would* do, but only if you grant it Notification access by hand (Android settings → Apps
+   & notifications → Special app access → Notification access → SURAN; the exact path on OxygenOS 11 is unverified, write it down).
+   Without that access nothing happens. To silence notifications today, turn them off app by app (concierge step).
+
+*History (original plan, Honor 10 Lite, Android 9 / EMUI 9, never run):* there is no Home role dialog on Android 9, so SURAN
+opens Settings (`ACTION_HOME_SETTINGS`); if that lists no launchers, use Settings → Apps → Default apps or press Home and pick SURAN →
+Always. EMUI battery: Settings → Battery → App launch → SURAN → manage manually. Both are unverified and kept only for the API 26–28 branch.
 
 Pull the research log: `adb pull /sdcard/Android/data/app.suran/files/events.jsonl`.
 Demo the Outside sheet: `adb shell am start -a app.suran.OUTSIDE --es package com.instagram.android`.
@@ -79,7 +91,7 @@ Demo the Outside sheet: `adb shell am start -a app.suran.OUTSIDE --es package co
 5. **Home list (v0.1.5):** centred horizontally, and vertically centred in the free space between the clock and the footer; app name (when it differs) sits under the label; when the list overflows it scrolls from the top.
 6. **Palette (v0.1.4): the website's palette**, see below. Primary buttons use the accent #3F4A3C with a #F7F5F1 label (8.5:1).
 7. `m2-spike/` is kept out of the build so M1 stays independent.
-8. `Phone`/`Messages`/`Camera`/`Maps` resolve through intents, so on EMUI they may bring up Huawei/Honor apps whose labels differ (they show as quiet secondary text), and `Maps` may offer more than one app.
+8. `Phone`/`Messages`/`Camera`/`Maps` resolve through intents, so on OxygenOS (and EMUI) they may bring up the maker's own apps, and `Maps` may offer more than one app. Since v0.1.8 Home shows the name Android reports for the chosen app.
 
 ## v0.1.1 fixes
 
@@ -218,10 +230,55 @@ primary label only. The "Not installed" line for unavailable apps is kept. Layou
 - **Files:** `Theme.kt`, `ThemeStore.kt` (new), `SuranApp.kt`, `SuranViewModel.kt`, `HomeActivity.kt`, `HomeScreen.kt`, `ChooseScreen.kt`, `OutsideActivity.kt`.
 - **Known limits:** a brief light flash at cold start in dark (the system starting window stays light); the footer may wrap with very large fonts. Not built or run in the authoring environment. The author reports it works on the OnePlus 6 (ST2): the theme change affects SURAN only, it persists, the footer is fine at the largest font; the brief light flash at cold start in dark is confirmed (`docs/TESTING.md` §5-6).
 
+## v0.1.8: app labels follow the system language
+
+`HomeScreen.kt` and `ChooseScreen.kt` only. For every installed selected app, catalog items included, Home shows the name Android
+reports now (`InstalledApp.label`, recomputed on each resume), e.g. Music → "Spotify". Not installed: catalog label, then the label
+saved in `config.json`. Choose shows the same live name as the secondary line of chosen catalog items. `config.json`, the ViewModel,
+the manifest and the dependencies are unchanged; `Entry.appLabel` is now only a fallback. SURAN's own UI language stays English.
+Supersedes v0.1.6 (the single Home label now comes from Android, not from the catalog).
+**Implemented. Built with Gradle (Android Studio, debug). Verified on the OnePlus 6 by the user** (system-language change; individual
+checklist items were not recorded). Not checked: truncation of long names at 26 sp / one line (TS-22).
+
+## v0.1.9: `home_ui_started`
+
+`SuranViewModel.kt` only. New event `home_ui_started{defaultHome}` in the ViewModel `init`: the Home UI started (new Activity, or restore
+after process death). Not logged on configuration changes, and not when the process is started for another reason (for example the
+notification listener). It does not say whether the user meant to open SURAN: Android may start it as Home. `app_open` is unchanged
+and now means only "the process started". Old `events.jsonl` data has no `home_ui_started`.
+**Implemented. Built with Gradle. Partly verified on the OnePlus 6 (ST3):** the event appears in `events.jsonl`. It was not logged when
+the process restarted with a `service` start type (after `am force-stop`); after a kill and after a reboot it appears
+once Android reopens Home. The other checklist items were not run.
+
+## v0.1.10: NotificationGate, phase 1 (log-only, experimental)
+
+- **Hypothesis:** showing notifications only from the chosen apps makes the phone less distracting. **Phase 1 only records**; it never
+  cancels, snoozes or changes a notification.
+- **How:** `NotificationGate.kt` (a `NotificationListenerService`) and a `<service>` in the manifest (no `uses-permission`, no INTERNET).
+  It works only after you grant Notification access in Android settings. For each notification it writes one deduplicated line
+  `notification_decision{pkg,category,decision,reason}`, plus `notification_listener_connected` / `_disconnected`. It reads only the
+  package, the category and the flags: never title, text, extras, and it does not look for one-time codes.
+- **Always `allow`:** SURAN, chosen apps, the 2FA whitelist, the default SMS app, the default dialer, categories call/alarm/system/error,
+  ongoing and foreground-service notifications, and packages with no launcher icon (system and service packages). Anything else is
+  logged as `would_suppress`.
+- **The 2FA whitelist is not complete** and **not verified**: `ALLOW_VERIFIED` is empty; `ALLOW_TO_VERIFY` holds names from the catalog and
+  from general knowledge. Banks, e-mail, chat and push approvals are not covered. Android cannot tell a code from an ordinary
+  notification without reading its content, which SURAN does not do (TS-25). **No suppression may be switched on before these
+  packages are checked on the OnePlus 6 and you decide explicitly.**
+- **Undo:** revoke the access in Android settings, or remove the `<service>` element. `config.json` is only read.
+- `requestRebind` is called when the listener disconnects; whether OxygenOS 11 honours it is unverified (TS-23).
+**Implemented. Built with Gradle (Android Studio, debug). Partly verified on the OnePlus 6 (ST3, 2026-11-10/11):** the service is
+registered, Notification access was granted by hand, `notification_listener_connected` and `notification_decision` are written
+(`no_launcher` for a system notification; `would_suppress`/`unselected` for Google Calendar, category `event`), the notifications stayed
+untouched, and after a kill, a reboot and `am force-stop` the process started again with a `service` start type and the listener reconnected. **Not verified:** the other decision branches
+(`selected`, `category`, `ongoing`, default SMS/dialer), the 2FA whitelist, `requestRebind` (TS-23), the lock screen before the first
+unlock, OxygenOS battery management, revoking the access. Phase 2 (suppression) is not implemented.
+
 ## Known limitations
-- Not compiled or device-tested. Not tested on any device other than the planned Honor 10 Lite.
+- Built and tested on the OnePlus 6 (ST1–ST3; many items not recorded). v0.1.8–v0.1.10 are only partly verified (`docs/TESTING.md` §6,
+  ST3). Not tested on any other device (the original plan, Honor 10 Lite, was never run).
 - No outside detection in M1 (Outside sheet is demo-only until M2 works).
-- Notifications from non-chosen apps are not handled.
+- Notifications from non-chosen apps are NOT suppressed. v0.1.10 only logs what SURAN would do; the 2FA whitelist is incomplete.
 - Real apps keep their own feeds once opened; SURAN controls only the doorway.
 - English only; light theme by default (dark is optional, SURAN only); portrait only.
 - Debug-signed release APK (prototype only).
