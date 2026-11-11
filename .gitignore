@@ -4,3 +4,8 @@ local.properties
 .idea/
 *.iml
 *.patch
+
+# Personal data: never commit device logs or a real configuration backup
+/config.backup.json
+/events.jsonl
+/events-*.jsonl
