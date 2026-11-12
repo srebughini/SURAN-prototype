@@ -133,7 +133,7 @@ Legenda ambiente: **B** build · **E** emulatore · **D** solo dispositivo fisic
 ### Etichette da Android, `home_ui_started`, NotificationGate fase 1 (v0.1.8–v0.1.10; D su OnePlus 6). Aggiornata con gli esiti di ST3 (§6)
 Legenda: `[x]` eseguita · `[~]` eseguita in parte (vedi nota) · `[ ]` non eseguita.
 Build
-- [x] B: build debug riuscita in Android Studio con tutte e tre le modifiche (ST3); eseguita anche l'installazione. Non registrati: esito della sync e il comando `./gradlew assembleDebug`  (nuovo file `NotificationGate.kt`; modifiche in `HomeScreen`, `ChooseScreen`, `SuranViewModel`, manifest)
+- [x] B: build debug riuscita in Android Studio con tutte e tre le modifiche (ST3), installata sul OnePlus 6; `:app:assembleDebug` riuscito anche sul branch di consolidamento (vedi sotto). Non registrato: esito della sync
 - [~] B: manifest unito (ST3: `<service>` presente con permesso e action; **elenco dei permessi non ispezionato**): assente `android.permission.INTERNET` e ogni altro `android.permission.*`; presente il `<service>` `NotificationGate` con `BIND_NOTIFICATION_LISTENER_SERVICE`. Il manifest *sorgente* non dichiara alcun `uses-permission`; il manifest unito può contenerne uno aggiunto da una libreria (probabile: `app.suran.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` di androidx.core, non verificato): annotare l'elenco reale
 - [ ] D: `sha256sum` di `config.json` (via `run-as`) prima e dopo ogni prova: identico
 
@@ -190,7 +190,7 @@ Per ogni sessione: data, build (variante), ambiente, voci provate, esito. Poi ag
 
 ### ST3 — etichette, `home_ui_started`, NotificationGate fase 1 (registrato il 2026-11-11; prove del 2026-11-10 e del 2026-11-11)
 
-- **Ambiente:** OnePlus A6003 (OnePlus 6), Android 11 (API 30), OxygenOS 11.1.2.2. Build debug del codice di v0.1.8–v0.1.10 compilata in Android Studio da una copia di lavoro separata (commit locale `e75ba1d`; i sorgenti in `app/` coincidono con quelli di questo consolidamento, confronto dell'albero eseguito) e installata il 2026-11-10 alle 12:30:19. Il primo tentativo di installazione è fallito con `INSTALL_PARSE_FAILED_NOT_APK` (causa non accertata); l'installazione successiva è riuscita. Il commit di consolidamento in sé non è stato compilato.
+- **Ambiente:** OnePlus A6003 (OnePlus 6), Android 11 (API 30), OxygenOS 11.1.2.2. Build debug del codice di v0.1.8–v0.1.10 compilata in Android Studio da una copia di lavoro separata (commit locale `e75ba1d`; i sorgenti in `app/` coincidono con quelli di questo consolidamento, confronto dell'albero eseguito) e installata il 2026-11-10 alle 12:30:19. Il primo tentativo di installazione è fallito con `INSTALL_PARSE_FAILED_NOT_APK` (causa non accertata); l'installazione successiva è riuscita. Il branch di consolidamento è stato compilato in seguito (vedi "Build del branch di consolidamento").
 - **Prima delle prove:** l'APK installato alle 11:49:42 (manifest ispezionato) non conteneva `NotificationGate`: la diagnosi "servizio non registrato" dipendeva dalla build installata, non dal codice (TS-26). Ispezionare il manifest dell'APK installato prima di ogni prova.
 - **Superati (con evidenza):**
   - Etichette nella lingua di sistema: verificate dall'utente (esito complessivo; dettaglio per voce non registrato).
@@ -202,3 +202,10 @@ Per ogni sessione: data, build (variante), ambiente, voci provate, esito. Poi ag
 - **Osservati, non spiegati:** dopo il force-stop un secondo bind 10,0 s dopo il primo, con `notification_listener_disconnected` e `_connected` (nessuna riga di unbind nel log di sistema); `connected` 8–10 s dopo l'avvio del processo (kill e riavvio); al boot (2026-11-11 09:35) primo bind fallito ("not found") e secondo riuscito 19 s dopo. Nessuna causa accertata (TS-23).
 - **Non eseguiti:** rami `selected`, `self`, `no_config`, `category` (call, alarm, system, error), `ongoing`, `default_sms`, `default_dialer`, whitelist 2FA; dedupe; `grep` di titoli e testi noti; elenco permessi del manifest unito; `sha256sum` di `config.json`; blocco schermo e primo sblocco; gestione batteria OxygenOS; pulizia dalle app recenti; inattività lunga; revoca dell'accesso; modalità aereo; regressione del tema scuro; `requestRebind` (effetto non attribuibile); percorso di concessione nelle impostazioni.
 - **Aggiornato dopo ST3:** `M1_FEATURES.md` (F-06, F-12, F-19) e TS-22…TS-26.
+
+### Build del branch di consolidamento (registrato il 2026-11-12; data della build non registrata)
+
+- **Branch:** `cons/m1-notifications`, 4 commit su `origin/main` (`37d2176`): `feat: log home UI start event`, `feat: add NotificationGate phase 1 logging`, `docs: update M1 implementation and test status`, `chore: ignore local configuration and event logs`. Working directory pulita (`git status --short` vuoto).
+- **Comando:** `:app:assembleDebug`, eseguito dall'utente (log di Gradle riportato).
+- **Esito:** `BUILD SUCCESSFUL in 23s`; 35 task, 10 eseguiti e 25 `UP-TO-DATE`. Tra gli eseguiti: `processDebugMainManifest`, `compileDebugKotlin`, `dexBuilderDebug`, `packageDebug`. Il log riportato non contiene errori né warning.
+- **Non eseguiti:** lint, test (non esistono test automatici), installazione e prova sul dispositivo di questo APK. Il codice in `app/` coincide con quello provato in ST3 (confronto eseguito sui file delle patch).
