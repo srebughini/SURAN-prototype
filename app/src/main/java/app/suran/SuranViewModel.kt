@@ -33,6 +33,11 @@ class SuranViewModel(private val app: Application) : AndroidViewModel(app) {
     private val _state = MutableStateFlow(initial())
     val state: StateFlow<UiState> = _state.asStateFlow()
 
+    // The Home UI started: new Activity, or restore after process death. Not logged on configuration changes
+    // (the ViewModel survives them) and not when the process is started for another reason (e.g. the notification
+    // listener). Says nothing about intent: Android may start SURAN as Home. The process start stays `app_open`.
+    init { log.log("home_ui_started", "defaultHome" to _state.value.isDefaultHome) }
+
     private fun initial(): UiState {
         val cfg = store.load()
         val inst = queryInstalled(app)

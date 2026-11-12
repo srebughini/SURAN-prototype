@@ -16,16 +16,19 @@ Istruzioni operative per chi interviene sul codice. Il **codice è la fonte di v
 
 - Mai scrivere "compila", "funziona", "testato" senza evidenza (log di build, esito su emulatore o dispositivo).
 - Distinguere sempre: ispezione del sorgente · compilazione · emulatore · dispositivo fisico (OnePlus 6).
+- Stati di una modifica, sempre separati: **implementata** (nel sorgente) · **compilata** (build Gradle riuscita) · **verificata sul OnePlus 6** (esito di un test, STn) · **sperimentale/non verificata**. Un controllo parziale (per esempio compilare un solo file con `kotlinc`) non è una build.
 - Dopo ogni verifica reale aggiornare la colonna "Verifica" di `docs/M1_FEATURES.md` e le voci di `docs/TECHNICAL_STATUS.md`.
 
 ## Compatibilità
 
 - minSdk 26, targetSdk 34. Dispositivo di riferimento (rilevato dal dispositivo): OnePlus A6003 (OnePlus 6), Android 11 (API 30), OxygenOS 11.1.2.2, build ONEPLUS A6003_22_211125. Versioni della toolchain: `docs/ARCHITECTURE.md`, sezione Dipendenze.
 - Percorso Home sul dispositivo di riferimento: `RoleManager` (API 29+). In ST1 SURAN è stato impostato come Home (schermata effettiva non registrata; riavvio e diniego da verificare). Il ramo API 26–28 (`ACTION_HOME_SETTINGS`) resta per minSdk e non è verificato.
-- Stato verifiche: smoke test #1 superato (compilazione, installazione, Home predefinita, Home, avvio app e ritorno, Wi-Fi/Bluetooth); smoke test #2 (tema scuro) superato in generale, voci non registrate singolarmente: `docs/TESTING.md` §6. Criticità aperte: `docs/TECHNICAL_STATUS.md`.
+- Stato verifiche: smoke test #1 superato (compilazione, installazione, Home predefinita, Home, avvio app e ritorno, Wi-Fi/Bluetooth); smoke test #2 (tema scuro) superato in generale, voci non registrate singolarmente: `docs/TESTING.md` §6. Smoke test #3 (ST3, 2026-11-10/11) su v0.1.8–v0.1.10: `docs/TESTING.md` §6. Criticità aperte: `docs/TECHNICAL_STATUS.md`.
+- Interventi v0.1.8–v0.1.10 (etichette da Android, evento `home_ui_started`, NotificationGate fase 1): **implementati; compilati con Gradle (Android Studio, debug, 2026-11-10); verificati in parte sul OnePlus 6 (ST3)**. Etichette: verificate dall'utente. `home_ui_started` e NotificationGate fase 1: provati in parte (`notification_decision` osservato per due package; dopo kill, riavvio e force-stop il processo è ripartito con avvio di tipo `service` e il listener si è ricollegato). **Non verificati:** gli altri rami di decisione, la whitelist 2FA, `requestRebind`, batteria OxygenOS. Dettaglio: `docs/TESTING.md` §6 (ST3), TS-22…TS-26.
 - API 27+/29+ solo dietro guardia `Build.VERSION.SDK_INT` (modelli: `isDefaultHome`, `requestHome`) o in cartelle risorse per API (`values-v27/`).
 - Package visibility (Android 11+): ogni nuovo intent risolto via `PackageManager` richiede una voce in `<queries>` del manifest.
 - Nessun permesso `INTERNET`, nessuna trasmissione di dati, `allowBackup=false`. Il log eventi è solo locale (il manifest lo cita come AC-33).
+- Notifiche (esperimento M1, fase 1 = sola registrazione): `NotificationGate` non deve cancellare, posticipare o modificare notifiche, né leggere titolo, testo, extras o altro contenuto (solo package, categoria, flag). L'accesso alle notifiche lo concede l'utente nelle impostazioni Android; il manifest dichiara solo il permesso di binding del servizio, nessun `uses-permission`. La soppressione richiede una decisione esplicita dopo la verifica dei package (TS-25).
 
 ## Architettura: regole da rispettare
 
@@ -33,7 +36,7 @@ Istruzioni operative per chi interviene sul codice. Il **codice è la fonte di v
 - Stato UI: un solo `UiState` in `SuranViewModel` (StateFlow). Navigazione = `Crossfade` sull'enum `Screen` in `HomeActivity`. Eccezione: il tema è `Ink.dark`, stato Compose globale caricato in `SuranApp`.
 - Persistenza: `config.json` (`ConfigStore`), `events.jsonl` (`EventLog`) con `org.json`, e `theme` (`ThemeStore`, testo "dark"/"light"). Il campo `schema` (=1) viene scritto ma non letto da `load()`: ogni cambio di formato deve restare compatibile con i file esistenti.
 - UI: Compose foundation con `BasicText` tramite `T()` / `TA()`. Niente Material. Nessuna nuova dipendenza senza approvazione.
-- Perimetro: M2 (`m2-spike`, servizio di accessibilità) resta fuori dal build M1. Non importare codice M2 in `app`.
+- Perimetro: M2 (`m2-spike`, servizio di accessibilità) resta fuori dal build M1. Non importare codice M2 in `app`. Il `NotificationListenerService` di M1 non è M2.
 
 ## Design (non derogare)
 

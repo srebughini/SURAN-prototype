@@ -58,5 +58,17 @@
             android:screenOrientation="portrait"
             android:taskAffinity=""
             android:theme="@style/Theme.Suran.Outside" />
+
+        <!-- M1 experiment, phase 1 (log-only): never alters a notification. Works only after the user grants
+             Notification access in Android Settings. No uses-permission is added; INTERNET stays absent (AC-33). -->
+        <service
+            android:name=".NotificationGate"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>
