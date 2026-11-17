@@ -6,7 +6,7 @@ Reference device: Honor 10 Lite, Android 9 / EMUI 9.
 **Status:** built, installed and tested on the OnePlus 6 (ST1, ST2 and ST3, results in `docs/TESTING.md` §6; many items were
 not recorded one by one). v0.1.8–v0.1.10 (app labels from Android, `home_ui_started`, NotificationGate phase 1) were built with Gradle
 (Android Studio, debug) and are **only partly verified on the device**: labels verified by the user; `home_ui_started` and
-NotificationGate seen working in the log; most decision branches, the 2FA whitelist, `requestRebind` and OxygenOS battery behaviour
+NotificationGate seen working in the log; the `category`, default-SMS and default-dialer branches, the 2FA whitelist, `requestRebind` and OxygenOS battery behaviour
 are **not verified**. `m2-spike/` is not compiled. The authoring environment has no Android SDK or Gradle: builds and device tests
 are run by the user.
 
@@ -267,11 +267,12 @@ once Android reopens Home. The other checklist items were not run.
   packages are checked on the OnePlus 6 and you decide explicitly.**
 - **Undo:** revoke the access in Android settings, or remove the `<service>` element. `config.json` is only read.
 - `requestRebind` is called when the listener disconnects; whether OxygenOS 11 honours it is unverified (TS-23).
-**Implemented. Built with Gradle (Android Studio, debug). Partly verified on the OnePlus 6 (ST3, 2026-11-10/11):** the service is
+**Implemented. Built with Gradle (Android Studio, debug). Partly verified on the OnePlus 6 (ST3 and ST4, 2026-11-10/17):** the service is
 registered, Notification access was granted by hand, `notification_listener_connected` and `notification_decision` are written
 (`no_launcher` for a system notification; `would_suppress`/`unselected` for Google Calendar, category `event`), the notifications stayed
-untouched, and after a kill, a reboot and `am force-stop` the process started again with a `service` start type and the listener reconnected. **Not verified:** the other decision branches
-(`selected`, `category`, `ongoing`, default SMS/dialer), the 2FA whitelist, `requestRebind` (TS-23), the lock screen before the first
+untouched, and after a kill, a reboot and `am force-stop` the process started again with a `service` start type and the listener reconnected. ST4 repeated the checks on the APK built from `main`: the `selected`, `whitelist_to_verify`, `ongoing` and `would_suppress` branches
+were seen in the log. **Not verified:** the `category` branch (call, alarm, system, error) with an app that is not selected,
+default SMS/dialer, `self`, `no_config`, the 2FA whitelist, `requestRebind` (TS-23), the lock screen before the first
 unlock, OxygenOS battery management, revoking the access. Phase 2 (suppression) is not implemented.
 
 ## Known limitations

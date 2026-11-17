@@ -130,7 +130,7 @@ Legenda ambiente: **B** build · **E** emulatore · **D** solo dispositivo fisic
 - [ ] TS-10: formato righe di `events.jsonl` e crescita del file dopo uso reale
 - [x] TS-02 (audit AU-02): SURAN impostato come Home su OnePlus 6 (ST1); schermata effettiva non registrata
 
-### Etichette da Android, `home_ui_started`, NotificationGate fase 1 (v0.1.8–v0.1.10; D su OnePlus 6). Aggiornata con gli esiti di ST3 (§6)
+### Etichette da Android, `home_ui_started`, NotificationGate fase 1 (v0.1.8–v0.1.10; D su OnePlus 6). Aggiornata con gli esiti di ST3 e ST4 (§6)
 Legenda: `[x]` eseguita · `[~]` eseguita in parte (vedi nota) · `[ ]` non eseguita.
 Build
 - [x] B: build debug riuscita in Android Studio con tutte e tre le modifiche (ST3), installata sul OnePlus 6; `:app:assembleDebug` riuscito anche sul branch di consolidamento (vedi sotto). Non registrato: esito della sync
@@ -152,13 +152,13 @@ Etichette (TS-22)
 - [ ] `am force-stop` e riapertura: un solo `home_ui_started`
 
 NotificationGate fase 1 (solo registrazione; TS-23, TS-24, TS-25)
-- [x] Accesso alle notifiche concesso a mano; annotare il percorso su OxygenOS 11; `notification_listener_connected` nel log — ST3: fatto; **percorso su OxygenOS 11 non registrato**; `notification_listener_connected` il 2026-11-10 alle 12:34:27
-- [~] **Nessuna notifica sparisce né cambia**: app selezionata, non selezionata, dialer, SMS predefinita, sveglia, app di autenticazione, banca, e-mail, notifica ongoing — ST3: provate solo una notifica di sistema (`com.android.shell`) e una di Google Calendar: comparse e rimaste. Le altre categorie elencate non provate
-- [~] Per ognuna, `decision` e `reason` plausibili in `events.jsonl`; rivedere l'elenco dei package `would_suppress` (TS-25) — ST3: due righe osservate (`no_launcher`; `would_suppress`/`unselected`, categoria `event`)
-- [ ] Per ogni package di `ALLOW_TO_VERIFY` installato sul telefono: compare con `whitelist_to_verify` quando pubblica una notifica? Annotare i nomi errati o mancanti
-- [~] Nessun contenuto in `events.jsonl`: cercare con `grep` titoli e testi noti delle notifiche provate — ST3: le righe osservate hanno solo i quattro campi; `grep` sistematico non eseguito
+- [x] Accesso alle notifiche concesso a mano; annotare il percorso su OxygenOS 11; `notification_listener_connected` nel log — ST3: fatto; **percorso su OxygenOS 11 non registrato**; `notification_listener_connected` il 2026-11-10 alle 12:34:27 — ST4 (2026-11-13): percorso registrato: Impostazioni → App e notifiche → Accesso speciale per le app → Accesso alle notifiche; elenco: Android Auto, Google Play Services, Google, Zen Mode, SURAN; consentite SURAN e Android Auto
+- [~] **Nessuna notifica sparisce né cambia**: app selezionata, non selezionata, dialer, SMS predefinita, sveglia, app di autenticazione, banca, e-mail, notifica ongoing — ST3: provate solo una notifica di sistema (`com.android.shell`) e una di Google Calendar: comparse e rimaste. Le altre categorie elencate non provate — ST4: sveglia di Orologio (app scelta): notifica comparsa mentre suonava, sveglia suonata e spenta normalmente; nessuna anomalia notata dall'utente nei giorni di prova (dichiarazione dell'utente, non strumentata)
+- [~] Per ognuna, `decision` e `reason` plausibili in `events.jsonl`; rivedere l'elenco dei package `would_suppress` (TS-25) — ST3: due righe osservate (`no_launcher`; `would_suppress`/`unselected`, categoria `event`) — ST4, sull'APK da `main`: `selected` (Play Store `status`; Orologio `alarm`), `whitelist_to_verify` (`com.google.android.gms`), `ongoing` (`android`), `would_suppress`/`unselected` (app Google; Calendar `event`)
+- [~] Per ogni package di `ALLOW_TO_VERIFY` installato sul telefono: compare con `whitelist_to_verify` quando pubblica una notifica? Annotare i nomi errati o mancanti — ST4: osservato solo `com.google.android.gms`; gli altri package non risultano nel log
+- [~] Nessun contenuto in `events.jsonl`: cercare con `grep` titoli e testi noti delle notifiche provate — ST3: le righe osservate hanno solo i quattro campi; `grep` sistematico non eseguito — ST4: su tutte le righe `notification_*` i soli campi sono `t`, `e`, `pkg`, `category`, `decision`, `reason`; nessuna occorrenza di `ZXQTEST9` (Count 0); ricerca di `SURANtest` e `prova` non riportata; non registrato se l'etichetta della sveglia fosse `ZXQTEST9`
 - [ ] Dedupe: la stessa app che notifica più volte produce una sola riga per (package, categoria, motivo)
-- [x] Riavvio senza aprire SURAN: `notification_listener_connected` compare dopo il boot (TS-23); `am force-stop`: osservare se il servizio torna — ST3: kill (2026-11-10 13:24), riavvio (13:30) e `am force-stop` (2026-11-11 09:37): il processo riparte con avvio di tipo `service` e il listener si ricollega
+- [x] Riavvio senza aprire SURAN: `notification_listener_connected` compare dopo il boot (TS-23); `am force-stop`: osservare se il servizio torna — ST3: kill (2026-11-10 13:24), riavvio (13:30) e `am force-stop` (2026-11-11 09:37): il processo riparte con avvio di tipo `service` e il listener si ricollega — ST4 (2026-11-17): `am force-stop` e 20 s di attesa: log da 117 a 121 righe, le prime 117 identiche; nuovo processo; `app_open` e `connected` alle 11:47:55; coppia `disconnected`/`connected` dopo 10 s (11:48:05)
 - [ ] Chiamata in arrivo con Phone non selezionata e sveglia di un'app non selezionata: normali
 - [ ] Revoca dell'accesso: nessuna notifica alterata, nessun nuovo evento `notification_*`; modalità aereo: tutto funziona; regressione del tema scuro
 
@@ -209,3 +209,24 @@ Per ogni sessione: data, build (variante), ambiente, voci provate, esito. Poi ag
 - **Comando:** `:app:assembleDebug`, eseguito dall'utente (log di Gradle riportato).
 - **Esito:** `BUILD SUCCESSFUL in 23s`; 35 task, 10 eseguiti e 25 `UP-TO-DATE`. Tra gli eseguiti: `processDebugMainManifest`, `compileDebugKotlin`, `dexBuilderDebug`, `packageDebug`. Il log riportato non contiene errori né warning.
 - **Non eseguiti:** lint, test (non esistono test automatici), installazione e prova sul dispositivo di questo APK. Il codice in `app/` coincide con quello provato in ST3 (confronto eseguito sui file delle patch).
+
+### ST4 — validazione dell'APK costruito da `main` (registrato il 2026-11-17; prove dal 2026-11-12 al 2026-11-17)
+
+- **Artefatto:** `app-debug.apk` dal progetto su `main` (`372dfaa`, working directory pulita), 6.296.096 byte, SHA-256 `C5A11489E42FDD9F5E7C4402ACE8496E65C63A2B5B8A5EE7743A7537F5F86AD9`, data del file 2026-11-12 11:49:33. Il log della build su `main` non è stato riportato: la provenienza da `372dfaa` non è dimostrata, ma il codice in `app/` è identico a quello del branch di consolidamento. Installato con `adb install -r` (`Success`; `lastUpdateTime` 2026-11-12 12:35:25).
+- **Nota operativa:** con due dispositivi `adb` collegati i comandi falliscono (`more than one device/emulator`); in PowerShell: `$env:ANDROID_SERIAL = '<seriale>'`.
+- **Esiti:**
+
+| ID | Test | Esito |
+|---|---|---|
+| T0 | APK installato = APK costruito | Superato: SHA-256 di `base.apk` sul telefono uguale a quello del file; servizio registrato con permesso; concessione e `config.json` (7 voci) conservati dopo l'aggiornamento |
+| T1 | `home_ui_started` | Conforme, causa non dimostrata: una riga (2026-11-13 10:24:50, `defaultHome` true) dopo `input keyevent KEYCODE_HOME`, nessuna `app_open`, PID invariato; la Home era già visibile |
+| T2 | SURAN in Accesso alle notifiche | Superato: percorso registrato (vedi checklist); consentite SURAN e Android Auto, coerente con `enabled_notification_listeners` |
+| T3 | Connessione del servizio | Superato: `am_proc_start` di tipo `service` alle 12:35:25.866, `notification_listener_connected` alle 12:35:30 (4,1 s dopo); nessuna `home_ui_started` dopo l'aggiornamento; log conservato |
+| T4 | Categorie diverse | In parte: righe spontanee (rami `selected`, `whitelist_to_verify`, `ongoing`, `would_suppress`); sveglia di Orologio con categoria `alarm`, passata per `selected` perché Orologio era stato aggiunto alle app scelte (`config_saved` 2026-11-13 12:56:25). Ramo `category` non provato (scelta dell'utente di non eseguire T4-bis) |
+| T5 | Solo metadati | Superato per i campi (solo `t`, `e`, `pkg`, `category`, `decision`, `reason` su tutte le righe `notification_*`) e per `ZXQTEST9` (Count 0); `SURANtest` e `prova` non riportati |
+| T6 | Notifiche normali | Dichiarazione dell'utente: notifica della sveglia comparsa mentre suonava, sveglia suonata e spenta normalmente, nessuna anomalia notata. Non strumentata |
+| T7 | Persistenza dopo riavvio dell'app | Superato: `am force-stop`, log 117 → 121 righe, prime 117 identiche (`Compare-Object` vuoto), PID 2294 → 15870, `app_open` e `connected` alle 11:47:55 |
+| T8 | `requestRebind` | **Non verificato**, non in questa fase |
+
+- **Osservato, non spiegato:** dopo il `force-stop` (2026-11-17) di nuovo `notification_listener_disconnected` e `_connected` esattamente 10 s dopo il primo collegamento (11:47:55 → 11:48:05), come in ST3 (2026-11-11); non osservato dopo kill, riavvio né aggiornamento dell'APK. Causa non accertata (TS-23).
+- **Non eseguiti:** T4-bis (regola `category` senza app selezionata), categorie `call`, `system`, `error`, `default_sms`, `default_dialer`, `self`, `no_config`, `whitelist_verified` (vuota), dedupe mirata, T1 pulito (distruzione della sola interfaccia dalle app recenti), blocco schermo e primo sblocco, gestione batteria OxygenOS, revoca dell'accesso, `requestRebind`.
